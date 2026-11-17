@@ -1,0 +1,2986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kuku Escape: Kinothia's Butchery Run</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Bungee&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #090d16;
+            font-family: 'Fredoka', sans-serif;
+            overflow: hidden;
+            overscroll-behavior: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100dvh;
+            width: 100vw;
+        }
+        /* Viewport scale-to-fit wrapper container */
+        #game-viewport-container {
+            position: relative;
+            width: 100vw;
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #game-shell {
+            position: relative;
+            width: 820px;
+            height: 640px;
+            background: #1e1b4b;
+            box-shadow: 0 25px 65px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            touch-action: none;
+            flex-shrink: 0;
+            transform-origin: center center;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        .kenya-stripe {
+            height: 6px;
+            width: 100%;
+            background: linear-gradient(90deg,
+                #000000 0%, #000000 22%,
+                #ffffff 22%, #ffffff 25%,
+                #bb0000 25%, #bb0000 50%,
+                #ffffff 50%, #ffffff 53%,
+                #006600 53%, #006600 78%,
+                #ffffff 78%, #ffffff 81%,
+                #000000 81%, #000000 100%
+            );
+        }
+        .title-bungee {
+            font-family: 'Bungee', cursive, sans-serif;
+            letter-spacing: 0.04em;
+            text-shadow: 0 5px 0 #7f1d1d, 0 10px 24px rgba(0,0,0,0.9);
+        }
+        .btn-kenya {
+            background: linear-gradient(135deg, #facc15 0%, #ea580c 50%, #b91c1c 100%);
+            border: 3px solid #ffffff;
+            box-shadow: 0 6px 0 #7f1d1d, 0 14px 28px rgba(0,0,0,0.6);
+            transition: transform 0.08s, box-shadow 0.08s;
+        }
+        .btn-kenya:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #7f1d1d, 0 6px 12px rgba(0,0,0,0.6);
+        }
+        .btn-shop {
+            background: linear-gradient(135deg, #06b6d4 0%, #2563eb 55%, #4f46e5 100%);
+            border: 3px solid #a5f3fc;
+            box-shadow: 0 6px 0 #1e3a8a, 0 14px 28px rgba(0,0,0,0.6);
+            transition: transform 0.08s, box-shadow 0.08s;
+        }
+        .btn-shop:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1e3a8a, 0 6px 12px rgba(0,0,0,0.6);
+        }
+        .btn-about {
+            background: linear-gradient(135deg, #64748b 0%, #334155 55%, #0f172a 100%);
+            border: 3px solid #cbd5e1;
+            box-shadow: 0 6px 0 #020617, 0 14px 28px rgba(0,0,0,0.6);
+            transition: transform 0.08s, box-shadow 0.08s;
+        }
+        .btn-about:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #020617, 0 6px 12px rgba(0,0,0,0.6);
+        }
+        .btn-revive {
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 55%, #064e3b 100%);
+            border: 3px solid #bbf7d0;
+            box-shadow: 0 6px 0 #052e16, 0 14px 28px rgba(0,0,0,0.65);
+            transition: transform 0.08s, box-shadow 0.08s;
+        }
+        .btn-revive:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #052e16, 0 6px 12px rgba(0,0,0,0.65);
+        }
+        @keyframes floatBob {
+            0%, 100% { transform: translateY(0px) rotate(-1deg); }
+            50% { transform: translateY(-7px) rotate(1deg); }
+        }
+        .float-anim {
+            animation: floatBob 1.9s ease-in-out infinite;
+        }
+        @keyframes skillActiveGlow {
+            0%, 100% { box-shadow: 0 0 16px #38bdf8, 0 0 28px #22d3ee; transform: scale(1.04); }
+            50% { box-shadow: 0 0 24px #ffffff, 0 0 38px #38bdf8; transform: scale(1.09); }
+        }
+        .skill-active {
+            animation: skillActiveGlow 0.5s ease-in-out infinite;
+            border-color: #38bdf8 !important;
+        }
+        @keyframes steamRise {
+            0%, 100% { transform: translateY(0px) scaleY(1); opacity: 0.75; }
+            50% { transform: translateY(-5px) scaleY(1.12); opacity: 0.35; }
+        }
+        .steam-wisp {
+            animation: steamRise 1.8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-viewport-container">
+    <div id="game-shell" class="sm:rounded-3xl sm:border-4 sm:border-red-500">
+        <!-- Top Kenyan Flag Ribbon -->
+        <div class="kenya-stripe absolute top-0 left-0 z-30"></div>
+
+        <!-- Main Interactive Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- TOP HUD -->
+        <div id="hud" class="hidden absolute top-2.5 sm:top-3 left-0 right-0 px-2.5 sm:px-5 z-20 flex flex-col gap-1.5 sm:gap-2 pointer-events-none">
+            <div class="flex items-center justify-between gap-1.5 sm:gap-2">
+                <!-- Points & Active Skill Status Pill -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <div class="bg-black/80 backdrop-blur-md border-2 border-yellow-400 rounded-2xl px-2.5 sm:px-3 py-1 sm:py-1.5 text-white shadow-lg">
+                        <div class="text-[9px] sm:text-[10px] uppercase tracking-wider text-yellow-300 font-bold leading-none">Escape Points</div>
+                        <div id="scoreDisplay" class="text-base sm:text-2xl font-bold text-green-400 leading-tight">0 PTS</div>
+                    </div>
+
+                    <!-- Active Skill Status Indicator -->
+                    <div id="activeSkillBadge" class="hidden bg-cyan-600/95 border-2 border-yellow-300 rounded-2xl px-2 sm:px-2.5 py-1 sm:py-1.5 text-white font-bold text-[10px] sm:text-xs shadow-lg flex items-center gap-1 sm:gap-1.5 animate-pulse">
+                        <span id="activeSkillIcon">🛡️</span>
+                        <span id="activeSkillText">SHIELD ACTIVE!</span>
+                    </div>
+                </div>
+
+                <!-- Right Controls: Revives (Purple Star), Best Score, Pause, & Sound Toggle -->
+                <div class="flex items-center gap-1 sm:gap-2 pointer-events-auto">
+                    <div class="bg-black/80 border border-purple-400/80 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 text-right">
+                        <div class="text-[8px] sm:text-[9px] text-purple-300 uppercase leading-none">Revives</div>
+                        <div class="text-[11px] sm:text-xs font-bold text-white flex items-center justify-end gap-1 mt-0.5">
+                            <svg viewBox="0 0 24 24" class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-purple-400 stroke-purple-200 stroke-[1.5] shrink-0" aria-hidden="true">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            <span id="hudReviveCount">0</span>
+                        </div>
+                    </div>
+                    <div class="hidden sm:block bg-black/75 border border-white/30 rounded-xl px-3 py-1.5 text-right">
+                        <div class="text-[9px] text-gray-300 uppercase leading-none">Best</div>
+                        <div id="bestHudDisplay" class="text-xs font-bold text-yellow-300">0 PTS</div>
+                    </div>
+                    <button id="pauseBtn" class="bg-black/85 border-2 border-yellow-400 text-yellow-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold shadow-md active:scale-95 cursor-pointer">
+                        ⏸️ PAUSE
+                    </button>
+                    <button id="muteBtn" class="bg-black/85 border-2 border-cyan-400 text-cyan-300 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold shadow-md active:scale-95 cursor-pointer">
+                        🔊 ON
+                    </button>
+                </div>
+            </div>
+
+            <!-- INTENSE BUTCHER CHASE DISTANCE METER -->
+            <div class="w-full max-w-md mx-auto bg-black/80 backdrop-blur-sm border-2 border-red-500/70 rounded-full px-3 py-0.5 sm:py-1 shadow-lg">
+                <div class="flex justify-between text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mb-0.5">
+                    <span class="text-red-400">🔪 KINOTHIA BUTCHER</span>
+                    <span id="chaseStatusText" class="text-yellow-300">GAP: 12m</span>
+                    <span class="text-green-400">KUKU 🐓</span>
+                </div>
+                <div class="relative w-full h-2 sm:h-3 bg-slate-900 rounded-full overflow-hidden border border-white/25">
+                    <div class="absolute inset-y-0 left-0 w-2/5 bg-gradient-to-r from-red-700/90 to-transparent"></div>
+                    <div id="chaseBarFill" class="h-full bg-gradient-to-r from-red-600 via-orange-400 to-green-400 transition-all duration-75 rounded-full" style="width: 65%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTO-ACTIVATE SKILL ICONS BAR (STACKED VERTICALLY ON RIGHT-END SIDE) -->
+        <div id="skillHudBar" class="hidden absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center gap-2 sm:gap-3 pointer-events-none">
+            <!-- Dynamically populated equipped skill gauges -->
+        </div>
+
+        <!-- MOBILE-FIRST TAP TO ESCAPE PROMPT -->
+        <div id="readyPrompt" class="hidden absolute inset-x-0 top-20 sm:top-32 z-20 flex flex-col items-center justify-center pointer-events-none px-4 text-center">
+            <div class="float-anim bg-black/85 backdrop-blur-md border-2 border-yellow-400 rounded-2xl px-4 sm:px-5 py-2 sm:py-3 shadow-2xl">
+                <div class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-red-400 mb-0.5">
+                    🏠 KINOTHIA'S BUTCHERY • CAGE BROKEN!
+                </div>
+                <div class="text-lg sm:text-3xl font-bold text-yellow-300 tracking-wide">
+                    👆 TAP TO ESCAPE!
+                </div>
+                <div class="text-[11px] sm:text-xs text-gray-200 mt-0.5">
+                    Tap anywhere to flap! Collect 🌽 💧 🦗 to charge your right-side Skills!
+                </div>
+            </div>
+        </div>
+
+        <!-- HOME PAGE OVERLAY: TITLE, CENTERED PLAY BUTTON BELOW TITLE, ABOUT BOTTOM-LEFT, SHOP BOTTOM-RIGHT -->
+        <div id="startScreen" class="absolute inset-0 z-30 bg-gradient-to-b from-slate-950/60 via-transparent to-black/75 flex flex-col items-center justify-start pt-6 sm:pt-9 px-4 text-center">
+            
+            <!-- 1. GAME TITLE & ROOSTER CREST -->
+            <div class="w-full max-w-lg flex flex-col items-center">
+                <div class="float-anim flex flex-col items-center">
+                    <!-- Custom Rooster & Cleaver Crest -->
+                    <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-500 via-red-600 to-yellow-300 p-1.5 shadow-[0_0_30px_rgba(250,204,21,0.75)] mb-1.5 sm:mb-2.5">
+                        <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center relative overflow-hidden">
+                            <svg viewBox="0 0 64 64" class="w-10 h-10 sm:w-14 sm:h-14" aria-hidden="true">
+                                <circle cx="32" cy="32" r="28" fill="#1e1b4b"/>
+                                <path d="M14 44 L48 14 L54 20 L22 48 Z" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+                                <rect x="10" y="42" width="12" height="6" rx="2" transform="rotate(-40 16 45)" fill="#92400e"/>
+                                <circle cx="34" cy="34" r="14" fill="#f59e0b" stroke="#000" stroke-width="2"/>
+                                <path d="M28 20 C28 14, 34 14, 35 19 C38 14, 43 16, 41 21 Z" fill="#dc2626"/>
+                                <polygon points="47,32 56,35 47,38" fill="#ea580c"/>
+                                <circle cx="40" cy="30" r="3.5" fill="#fff"/>
+                                <circle cx="41" cy="30" r="1.8" fill="#000"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Main Title -->
+                    <h1 class="title-bungee text-3xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-amber-400 to-red-500 leading-none">
+                        KUKU ESCAPE
+                    </h1>
+
+                    <!-- Subtitle Banner -->
+                    <div class="mt-1 sm:mt-2 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full bg-red-950/90 border-2 border-yellow-400/80 text-amber-200 font-bold text-[10px] sm:text-base tracking-widest uppercase shadow-xl">
+                        KINOTHIA'S BUTCHERY RUN
+                    </div>
+
+                    <!-- Quick Status Pill with Purple Star Revive Icon -->
+                    <div class="mt-1.5 sm:mt-2 flex items-center gap-2 text-[11px] sm:text-xs font-bold bg-black/75 border border-white/20 rounded-full px-3 py-0.5 sm:py-1 text-gray-200">
+                        <span>🏆 Best: <strong id="startHighScore" class="text-yellow-300">0 PTS</strong></span>
+                        <span class="text-white/30">•</span>
+                        <span class="inline-flex items-center gap-1">
+                            <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 fill-purple-400 stroke-purple-200 stroke-[1.5] inline" aria-hidden="true">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            <span>Revives: <strong id="startReviveBalance" class="text-purple-300">0</strong></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. PLAY BUTTON AT THE CENTER BELOW THE TITLE -->
+            <div class="my-auto flex items-center justify-center">
+                <button id="startBtn" type="button" aria-label="Play Game" class="btn-kenya w-28 h-28 sm:w-36 sm:h-36 rounded-3xl text-white flex flex-col items-center justify-center gap-1.5 cursor-pointer group">
+                    <svg viewBox="0 0 24 24" class="w-12 h-12 sm:w-16 sm:h-16 fill-current drop-shadow-md transition-transform group-hover:scale-110" aria-hidden="true">
+                        <path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.86-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/>
+                    </svg>
+                    <span class="text-sm sm:text-lg font-bold tracking-widest uppercase drop-shadow">PLAY</span>
+                </button>
+            </div>
+
+            <!-- 3. ABOUT ICON ON BOTTOM LEFT -->
+            <button id="openAboutBtn" type="button" aria-label="About Game" class="btn-about absolute bottom-5 left-5 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl text-white flex flex-col items-center justify-center gap-1 cursor-pointer group">
+                <svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-9 sm:h-9 fill-none stroke-current stroke-[2.4] stroke-linecap-round stroke-linejoin-round drop-shadow-md transition-transform group-hover:scale-110" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span class="text-[10px] sm:text-xs font-bold tracking-widest uppercase drop-shadow">ABOUT</span>
+            </button>
+
+            <!-- 4. SHOP ICON ON BOTTOM RIGHT -->
+            <button id="openShopBtn" type="button" aria-label="Open Shop" class="btn-shop absolute bottom-5 right-5 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl text-white flex flex-col items-center justify-center gap-1 cursor-pointer group">
+                <svg viewBox="0 0 24 24" class="w-7 h-7 sm:w-9 sm:h-9 fill-none stroke-current stroke-[2.2] stroke-linecap-round stroke-linejoin-round drop-shadow-md transition-transform group-hover:scale-110" aria-hidden="true">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+                <span class="text-[10px] sm:text-xs font-bold tracking-widest uppercase drop-shadow">SHOP</span>
+            </button>
+        </div>
+
+        <!-- ABOUT MODAL -->
+        <div id="aboutModal" class="hidden absolute inset-0 z-40 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center">
+            <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-black border-2 border-yellow-400 rounded-3xl p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3.5">
+                <div class="flex items-center justify-between">
+                    <button id="closeAboutBtn" type="button" aria-label="Back to Home" class="w-10 h-10 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-yellow-400/70 text-white flex items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 fill-none stroke-current stroke-[2.6] stroke-linecap-round stroke-linejoin-round" aria-hidden="true">
+                            <path d="M19 12H5"/>
+                            <path d="M12 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <h3 class="text-lg sm:text-xl font-extrabold text-yellow-300 tracking-wider uppercase">ABOUT GAME</h3>
+                    <div class="w-10 h-10"></div>
+                </div>
+
+                <div class="bg-slate-900/90 border border-white/15 rounded-2xl p-3.5 text-left space-y-2.5 text-xs sm:text-sm text-gray-200">
+                    <p><strong class="text-yellow-300">🐓 Story:</strong> Break free from Kinothia's Butchery and sprint across Nairobi's murram streets before the butcher catches you!</p>
+                    <p><strong class="text-cyan-300">👆 Controls:</strong> Tap anywhere or press <span class="bg-slate-800 px-1.5 py-0.5 rounded border border-white/20 font-bold">SPACE</span> to flap and dodge matatus, choma cookers, and KPLC poles.</p>
+                    <p><strong class="text-green-400">🌽 Power-Ups:</strong> Peck Mahindi, Maji, and Dudu to widen your lead and auto-charge your Shield, Magnet, and Boost skills.</p>
+                </div>
+
+                <button id="closeAboutBottomBtn" type="button" class="btn-kenya w-full py-2.5 rounded-2xl text-white font-extrabold text-sm tracking-wider uppercase cursor-pointer">
+                    GOT IT!
+                </button>
+            </div>
+        </div>
+
+        <!-- MINIMAL VISUAL SKILLS PACK SHOP MODAL (30 KSH VIA M-PESA) -->
+        <div id="shopModal" class="hidden absolute inset-0 z-40 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4 text-center">
+            <div class="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border-2 border-cyan-400 rounded-3xl p-4 sm:p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 sm:gap-4">
+                
+                <!-- Clean Header with Top-Left Back Icon -->
+                <div class="flex items-center justify-between">
+                    <button id="closeShopBtn" type="button" aria-label="Back to Home" class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-cyan-400/70 text-white flex items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 sm:w-6 sm:h-6 fill-none stroke-current stroke-[2.6] stroke-linecap-round stroke-linejoin-round" aria-hidden="true">
+                            <path d="M19 12H5"/>
+                            <path d="M12 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 sm:w-6 sm:h-6 text-cyan-300 fill-none stroke-current stroke-[2.2] stroke-linecap-round stroke-linejoin-round" aria-hidden="true">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-cyan-300 tracking-wider uppercase">SHOP</h3>
+                    </div>
+
+                    <!-- Spacer for balanced title alignment -->
+                    <div class="w-10 h-10 sm:w-11 sm:h-11"></div>
+                </div>
+
+                <!-- Visual 3-Skill Pack Card -->
+                <div class="bg-slate-900/90 border-2 border-yellow-400/80 rounded-3xl p-3 sm:p-4 space-y-2.5 sm:space-y-3.5 shadow-inner">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs sm:text-sm font-extrabold text-yellow-300 tracking-wider uppercase">ALL SKILLS PACK</span>
+                        <span id="packStatusBadge" class="text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 border border-white/20 text-gray-300 uppercase">
+                            LOCKED
+                        </span>
+                    </div>
+
+                    <!-- 3 Skill Icons Side-by-Side -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <!-- SHIELD -->
+                        <div class="flex flex-col items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-sky-400/50 rounded-2xl py-2 sm:py-2.5 px-2">
+                            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 border-2 border-white/70 flex items-center justify-center text-2xl sm:text-3xl shadow-md">
+                                🛡️
+                            </div>
+                            <span class="text-[11px] sm:text-xs font-extrabold text-sky-300 tracking-wide uppercase">SHIELD</span>
+                        </div>
+
+                        <!-- MAGNET -->
+                        <div class="flex flex-col items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-purple-400/50 rounded-2xl py-2 sm:py-2.5 px-2">
+                            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-800 border-2 border-white/70 flex items-center justify-center text-2xl sm:text-3xl shadow-md">
+                                🧲
+                            </div>
+                            <span class="text-[11px] sm:text-xs font-extrabold text-purple-300 tracking-wide uppercase">MAGNET</span>
+                        </div>
+
+                        <!-- BOOST -->
+                        <div class="flex flex-col items-center gap-1 sm:gap-1.5 bg-slate-950/90 border border-yellow-400/50 rounded-2xl py-2 sm:py-2.5 px-2">
+                            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-600 border-2 border-white/70 flex items-center justify-center text-2xl sm:text-3xl shadow-md">
+                                ⚡
+                            </div>
+                            <span class="text-[11px] sm:text-xs font-extrabold text-yellow-300 tracking-wide uppercase">BOOST</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Single Pack M-Pesa Purchase CTA or Active Status -->
+                <div id="shopPackActionArea">
+                    <button id="buySkillsPackBtn" type="button" class="w-full py-2.5 sm:py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 border-2 border-white text-white font-extrabold text-sm sm:text-base tracking-wide uppercase shadow-lg flex items-center justify-center gap-2.5 cursor-pointer active:scale-95">
+                        <span class="bg-white text-emerald-700 font-black px-2 py-0.5 rounded text-xs">M-PESA</span>
+                        <span>BUY PACK • 30 KSH</span>
+                    </button>
+
+                    <div id="packUnlockedBanner" class="hidden w-full py-2.5 sm:py-3 rounded-2xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-300 font-extrabold text-xs sm:text-sm tracking-wider uppercase">
+                        UNLOCKED &amp; EQUIPPED ✅
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAUSE MENU MODAL -->
+        <div id="pauseModal" class="hidden absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center">
+            <div class="bg-slate-900 border-2 border-yellow-400 rounded-3xl p-5 sm:p-6 max-w-xs w-full shadow-2xl space-y-3.5">
+                <h2 class="text-xl sm:text-2xl font-bold text-yellow-300">⏸️ GAME PAUSED</h2>
+                <p class="text-xs text-gray-300">Take a breather, Kiongozi! Kinothia's butcher is waiting.</p>
+                <div class="space-y-2">
+                    <button id="resumeBtn" class="btn-kenya w-full py-2.5 sm:py-3 rounded-2xl text-white text-base sm:text-lg font-bold tracking-wider uppercase cursor-pointer">
+                        ▶️ RESUME ESCAPE
+                    </button>
+                    <button id="quitToMenuBtn" class="w-full py-2 sm:py-2.5 bg-red-900/80 border border-red-500 rounded-2xl text-white text-xs font-bold uppercase cursor-pointer">
+                        🏠 QUIT TO HOME
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME OVER OVERLAY WITH BIG CENTERED RETRY BUTTON AND SMALLER SIDE ICONS -->
+        <div id="gameOverScreen" class="hidden absolute inset-0 z-30 bg-black/92 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-5 text-center overflow-y-auto">
+            
+            <!-- Cooked Chicken (Kuku Choma) Illustration Platter -->
+            <div class="relative mb-2 sm:mb-3 flex flex-col items-center">
+                <div class="w-20 h-16 sm:w-28 sm:h-24 rounded-3xl bg-gradient-to-b from-amber-950/90 to-red-950/90 border-2 border-amber-400/80 shadow-[0_0_24px_rgba(251,146,60,0.45)] flex items-center justify-center p-1">
+                    <svg viewBox="0 0 120 96" class="w-full h-full drop-shadow-md" aria-label="Cooked Roasted Kuku Choma Chicken">
+                        <defs>
+                            <radialGradient id="roastSkinGrad" cx="42%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#fbbf24"/>
+                                <stop offset="45%" stop-color="#d97706"/>
+                                <stop offset="85%" stop-color="#92400e"/>
+                                <stop offset="100%" stop-color="#451a03"/>
+                            </radialGradient>
+                            <linearGradient id="platterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#cbd5e1"/>
+                                <stop offset="50%" stop-color="#f8fafc"/>
+                                <stop offset="100%" stop-color="#94a3b8"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Rising Hot Steam Wisps -->
+                        <g class="steam-wisp" stroke="#f8fafc" stroke-width="2.4" fill="none" stroke-linecap="round">
+                            <path d="M40 24 C36 17, 44 13, 40 6"/>
+                            <path d="M60 21 C56 14, 64 10, 60 3"/>
+                            <path d="M80 24 C76 17, 84 13, 80 6"/>
+                        </g>
+
+                        <!-- Serving Platter & Lettuce Garnish -->
+                        <ellipse cx="60" cy="76" rx="52" ry="12" fill="url(#platterGrad)" stroke="#475569" stroke-width="2"/>
+                        <ellipse cx="60" cy="74" rx="43" ry="8" fill="#e2e8f0"/>
+                        <!-- Fresh Sukuma / Lettuce & Tomato Garnish -->
+                        <path d="M22 72 Q32 64 42 73 Q52 65 62 73 Q74 64 84 73 Q93 66 98 73" fill="#16a34a" stroke="#14532d" stroke-width="1.5"/>
+                        <circle cx="28" cy="73" r="4" fill="#ef4444"/>
+                        <circle cx="92" cy="73" r="4" fill="#ef4444"/>
+
+                        <!-- Roasted Whole Chicken Body -->
+                        <path d="M32 62 C26 48, 36 30, 58 30 C78 30, 88 45, 84 60 C81 68, 70 71, 58 71 C43 71, 35 68, 32 62 Z" fill="url(#roastSkinGrad)" stroke="#451a03" stroke-width="2.2"/>
+
+                        <!-- Crispy Char Grill Marks -->
+                        <path d="M46 36 Q55 41 64 36" stroke="#451a03" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.7"/>
+                        <path d="M43 44 Q55 50 67 44" stroke="#451a03" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.7"/>
+                        <path d="M45 52 Q56 58 66 52" stroke="#451a03" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.65"/>
+
+                        <!-- Glossy Honey-Glaze Highlight -->
+                        <ellipse cx="52" cy="36" rx="10" ry="3.5" transform="rotate(-12 52 36)" fill="#fef3c7" opacity="0.55"/>
+
+                        <!-- Roasted Wing -->
+                        <path d="M45 49 C37 49, 34 57, 42 61 C49 63, 55 57, 52 51 Z" fill="#b45309" stroke="#451a03" stroke-width="1.8"/>
+
+                        <!-- Drumstick & White Bone Tip -->
+                        <g transform="translate(72, 52) rotate(-18)">
+                            <rect x="14" y="-3.5" width="16" height="7" rx="2" fill="#fefce8" stroke="#78350f" stroke-width="1.5"/>
+                            <circle cx="30" cy="-3" r="3.5" fill="#fefce8" stroke="#78350f" stroke-width="1.5"/>
+                            <circle cx="30" cy="3" r="3.5" fill="#fefce8" stroke="#78350f" stroke-width="1.5"/>
+                            <path d="M-8 -8 C2 -10, 15 -6, 16 0 C15 6, 2 10, -8 8 C-14 6, -14 -6, -8 -8 Z" fill="#b45309" stroke="#451a03" stroke-width="2"/>
+                            <ellipse cx="1" cy="-3" rx="6" ry="2.2" fill="#fcd34d" opacity="0.5"/>
+                        </g>
+                    </svg>
+                </div>
+                <span class="-mt-2 bg-amber-500 text-black border border-white text-[9px] sm:text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+                    🍗 KUKU CHOMA READY!
+                </span>
+            </div>
+
+            <div class="bg-red-600 border-2 border-yellow-300 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-0.5 rounded-full uppercase tracking-widest mb-2.5 animate-bounce">
+                🔪 CHOP! CHOP! RUDI KINOTHIA'S BUTCHERY!
+            </div>
+
+            <!-- Score Summary Card -->
+            <div class="w-full max-w-xs bg-white/10 border-2 border-red-500/80 rounded-2xl p-2.5 sm:p-3.5 mb-3.5 sm:mb-4 space-y-1">
+                <div class="flex justify-between text-xs sm:text-sm text-gray-200">
+                    <span>Escape Points:</span>
+                    <span id="finalScoreDisplay" class="font-bold text-green-400 text-sm sm:text-base">0 PTS</span>
+                </div>
+                <div class="flex justify-between text-xs sm:text-sm text-gray-200">
+                    <span>Distance Sprinted:</span>
+                    <span id="finalDistDisplay" class="font-bold text-cyan-300">0 m</span>
+                </div>
+                <div class="border-t border-white/20 pt-1 flex justify-between text-xs sm:text-sm">
+                    <span class="text-yellow-200 font-bold">Best Record:</span>
+                    <span id="finalBestDisplay" class="font-bold text-yellow-400">0 PTS</span>
+                </div>
+            </div>
+
+            <!-- BIG RETRY IN THE CENTER WITH SMALLER REVIVE & HOME ICONS ON THE SIDES -->
+            <div class="flex items-center justify-center gap-4 sm:gap-6 mb-3 sm:mb-4">
+                <!-- Smaller Revive Icon on Left Side -->
+                <button id="reviveBtn" type="button" aria-label="Revive Kuku" class="btn-revive relative w-14 h-14 sm:w-16 sm:h-16 p-1.5 rounded-2xl text-white flex flex-col items-center justify-center gap-0.5 cursor-pointer group">
+                    <span id="reviveCountBadge" class="absolute -top-2 -right-2 bg-purple-600 text-white border-2 border-white text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-md">
+                        0
+                    </span>
+                    <svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-7 sm:h-7 fill-purple-400 stroke-purple-100 stroke-[1.4] drop-shadow-[0_2px_8px_rgba(168,85,247,0.85)] transition-transform group-hover:scale-110 group-hover:rotate-12" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="text-[9px] sm:text-[10px] font-bold tracking-wider uppercase drop-shadow">REVIVE</span>
+                </button>
+
+                <!-- BIG Retry Icon Button in the Center -->
+                <button id="restartBtn" type="button" aria-label="Retry Escape" class="btn-kenya w-24 h-24 sm:w-28 sm:h-28 p-2 rounded-3xl text-white flex flex-col items-center justify-center gap-1 cursor-pointer group">
+                    <svg viewBox="0 0 24 24" class="w-11 h-11 sm:w-14 sm:h-14 fill-none stroke-current stroke-[2.5] stroke-linecap-round stroke-linejoin-round drop-shadow-md transition-transform duration-300 group-hover:-rotate-180" aria-hidden="true">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    <span class="text-xs sm:text-base font-bold tracking-wider uppercase drop-shadow">RETRY</span>
+                </button>
+
+                <!-- Smaller Home Icon on Right Side -->
+                <button id="gameOverHomeBtn" type="button" aria-label="Return Home" class="btn-shop w-14 h-14 sm:w-16 sm:h-16 p-1.5 rounded-2xl text-white flex flex-col items-center justify-center gap-0.5 cursor-pointer group">
+                    <svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-7 sm:h-7 fill-none stroke-current stroke-[2.4] stroke-linecap-round stroke-linejoin-round drop-shadow-md transition-transform group-hover:scale-110" aria-hidden="true">
+                        <path d="M3 10.5L12 3l9 7.5"/>
+                        <path d="M5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V9.5"/>
+                        <path d="M9.5 20.5v-6a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v6"/>
+                    </svg>
+                    <span class="text-[9px] sm:text-[10px] font-bold tracking-wider uppercase drop-shadow">HOME</span>
+                </button>
+            </div>
+
+            <!-- M-PESA BUY REVIVES CALLOUT BUTTON -->
+            <button id="openMpesaModalBtn" type="button" class="bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-200 text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-2xl shadow-lg flex items-center gap-2 cursor-pointer active:scale-95">
+                <span class="bg-white text-emerald-700 font-extrabold px-1.5 py-0.5 rounded text-[10px]">M-PESA</span>
+                <span class="inline-flex items-center gap-1">
+                    <span>+ BUY 5</span>
+                    <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-purple-300 stroke-purple-950 stroke-[1.2] inline" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>REVIVES • 10 KSH</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- UNIFIED LIPA NA M-PESA MODAL (SUPPORTS 10 KSH REVIVES & 30 KSH ALL SKILLS PACK) -->
+        <div id="mpesaModal" class="hidden absolute inset-0 z-50 bg-black/92 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4 text-center">
+            <div class="bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-950 border-2 border-emerald-400 rounded-3xl p-4 sm:p-5 max-w-sm w-full shadow-2xl space-y-3 sm:space-y-4">
+                <!-- M-Pesa Header -->
+                <div class="flex items-center justify-between border-b border-emerald-500/30 pb-2 sm:pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 border-2 border-white flex items-center justify-center font-extrabold text-white text-xs sm:text-sm shadow">
+                            M-P
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-sm sm:text-lg font-bold text-emerald-300 leading-none">LIPA NA M-PESA</h3>
+                            <p id="mpesaHeaderSub" class="text-[10px] sm:text-[11px] text-gray-300">Instant Express Payment</p>
+                        </div>
+                    </div>
+                    <button id="closeMpesaBtn" type="button" class="text-gray-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+                </div>
+
+                <!-- Package Deal Banner -->
+                <div class="bg-emerald-900/50 border border-emerald-400/60 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between">
+                    <div class="text-left">
+                        <div id="mpesaItemLabel" class="text-[10px] sm:text-xs text-emerald-200 uppercase font-bold">Kuku Second Chance Pack</div>
+                        <div id="mpesaItemTitle" class="text-base sm:text-lg font-extrabold text-white flex items-center gap-1.5">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5 fill-purple-400 stroke-purple-200 stroke-[1.5] shrink-0" aria-hidden="true">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            <span>5 REVIVES</span>
+                        </div>
+                    </div>
+                    <div id="mpesaPriceTag" class="bg-yellow-400 text-black font-extrabold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-xs sm:text-sm shadow">
+                        10 KSH
+                    </div>
+                </div>
+
+                <!-- Input Form Step -->
+                <div id="mpesaFormStep" class="space-y-2.5 sm:space-y-3 text-left">
+                    <div>
+                        <label for="mpesaPhoneInput" class="block text-[11px] sm:text-xs font-bold text-emerald-200 uppercase mb-1">
+                            Safaricom M-Pesa Number
+                        </label>
+                        <input
+                            id="mpesaPhoneInput"
+                            type="tel"
+                            maxlength="13"
+                            placeholder="e.g. 0712345678 or 0112345678"
+                            class="w-full px-3 py-2 sm:py-2.5 rounded-xl bg-slate-950 border-2 border-emerald-500/70 text-white font-bold text-sm sm:text-base focus:outline-none focus:border-yellow-400"
+                        />
+                        <p id="mpesaErrorMsg" class="hidden text-xs text-red-400 font-bold mt-1">
+                            Enter a valid Kenyan phone number (07XX... or 01XX...).
+                        </p>
+                    </div>
+
+                    <button id="sendStkBtn" type="button" class="w-full py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 border-2 border-white text-white font-extrabold text-xs sm:text-base tracking-wide uppercase shadow-lg cursor-pointer active:scale-95">
+                        📲 SEND STK PUSH (10 KSH)
+                    </button>
+                </div>
+
+                <!-- Simulated STK Push Processing & Confirmation Step -->
+                <div id="mpesaStatusStep" class="hidden py-2.5 space-y-2.5">
+                    <div id="mpesaSpinner" class="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-full border-4 border-emerald-400 border-t-transparent animate-spin"></div>
+                    <div id="mpesaSuccessIcon" class="hidden w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg">
+                        ✅
+                    </div>
+                    <div id="mpesaStatusTitle" class="text-sm sm:text-base font-bold text-yellow-300">
+                        Sending M-Pesa STK Push...
+                    </div>
+                    <p id="mpesaStatusDesc" class="text-xs text-gray-200 leading-relaxed">
+                        Check your phone screen and enter your M-Pesa PIN to pay 10 KSH to Kinothia Escape.
+                    </p>
+                    <button id="mpesaSuccessActionBtn" type="button" class="hidden btn-revive w-full py-2.5 sm:py-3 rounded-2xl text-white font-extrabold text-xs sm:text-base uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5">
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 fill-purple-400 stroke-purple-100 stroke-[1.5]" aria-hidden="true">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span>USE 1 REVIVE &amp; CONTINUE RUN!</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Kenyan Flag Ribbon -->
+        <div class="kenya-stripe absolute bottom-0 left-0 z-30"></div>
+    </div>
+</div>
+
+<script>
+/**
+ * KUKU ESCAPE: KINOTHIA'S BUTCHERY RUN
+ * - Fixed Aspect Ratio Scale-to-Fit Engine: Scales the 820x640 shell uniformly to fit
+ *   inside any browser window or screen size without clipping or abnormal stretching.
+ */
+
+// ==========================================
+// 1. STORAGE, SKILLS CATALOG & REVIVES
+// ==========================================
+const STORAGE_KEY_SCORE = 'kuku_escape_score_v9';
+const STORAGE_KEY_PACK_OWNED = 'kuku_escape_skills_pack_v9';
+const STORAGE_KEY_REVIVES = 'kuku_escape_revives_v9';
+
+let bestScore = parseInt(localStorage.getItem(STORAGE_KEY_SCORE) || '0', 10);
+let reviveCount = parseInt(localStorage.getItem(STORAGE_KEY_REVIVES) || '0', 10);
+let isSkillsPackOwned = localStorage.getItem(STORAGE_KEY_PACK_OWNED) === 'true';
+
+let unlockedSkills = isSkillsPackOwned ? ['shield', 'magnet', 'turbo'] : ['shield'];
+let equippedSkills = isSkillsPackOwned ? ['shield', 'magnet', 'turbo'] : ['shield'];
+
+let currentMpesaMode = 'revives';
+
+const SKILL_CHARGE_MULTIPLIERS = {
+    shield: 1.35,
+    magnet: 1.0,
+    turbo: 0.72
+};
+
+const SKILLS_CATALOG = [
+    { id: 'shield', name: 'SHIELD', icon: '🛡️', duration: 4.0, color: '#38bdf8', bgGradient: 'from-sky-500 to-blue-700' },
+    { id: 'magnet', name: 'MAGNET', icon: '🧲', duration: 5.5, color: '#a855f7', bgGradient: 'from-fuchsia-500 to-purple-800' },
+    { id: 'turbo', name: 'BOOST', icon: '⚡', duration: 2.8, color: '#facc15', bgGradient: 'from-yellow-400 to-orange-600' }
+];
+
+let skillCharge = { shield: 0, magnet: 0, turbo: 0 };
+let activeSkillTimers = { shield: 0, magnet: 0, turbo: 0 };
+
+const PURPLE_STAR_SVG_SM = `<svg viewBox="0 0 24 24" class="w-5 h-5 fill-purple-400 stroke-purple-200 stroke-[1.5] inline shrink-0" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+// ==========================================
+// 2. WEB AUDIO API KENYAN OHANGLA & SFX
+// ==========================================
+class KenyanOhanglaAudio {
+    constructor() {
+        this.ctx = null;
+        this.musicOn = true;
+        this.grooveTimer = null;
+        this.step = 0;
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    playFlap() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(640, now + 0.055);
+        osc.frequency.exponentialRampToValueAtTime(410, now + 0.095);
+
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.11);
+    }
+
+    playPeck(pitchBoost = 0) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [659.25 + pitchBoost, 987.77 + pitchBoost];
+        notes.forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.045);
+
+            gain.gain.setValueAtTime(0.15, now + i * 0.045);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.045 + 0.19);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.045);
+            osc.stop(now + i * 0.045 + 0.21);
+        });
+    }
+
+    playSkillActivate() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const freqs = [330, 440, 554.37, 659.25, 880];
+        freqs.forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(f, now + idx * 0.035);
+            osc.frequency.exponentialRampToValueAtTime(f * 1.25, now + idx * 0.035 + 0.18);
+
+            gain.gain.setValueAtTime(0.09, now + idx * 0.035);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.035 + 0.22);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.035);
+            osc.stop(now + idx * 0.035 + 0.24);
+        });
+    }
+
+    playReviveChime() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + idx * 0.06);
+            gain.gain.setValueAtTime(0.16, now + idx * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.28);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.06);
+            osc.stop(now + idx * 0.06 + 0.3);
+        });
+    }
+
+    playStumble() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(165, now);
+        osc.frequency.exponentialRampToValueAtTime(52, now + 0.26);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.29);
+
+        const blade = this.ctx.createOscillator();
+        const bGain = this.ctx.createGain();
+        blade.type = 'square';
+        blade.frequency.setValueAtTime(1480, now + 0.04);
+        blade.frequency.exponentialRampToValueAtTime(920, now + 0.24);
+        bGain.gain.setValueAtTime(0.07, now + 0.04);
+        bGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        blade.connect(bGain);
+        bGain.connect(this.ctx.destination);
+        blade.start(now + 0.04);
+        blade.stop(now + 0.26);
+    }
+
+    playChopHit() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+
+        const thud = this.ctx.createOscillator();
+        const tGain = this.ctx.createGain();
+        thud.type = 'triangle';
+        thud.frequency.setValueAtTime(190, now);
+        thud.frequency.exponentialRampToValueAtTime(48, now + 0.09);
+        tGain.gain.setValueAtTime(0.26, now);
+        tGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        thud.connect(tGain);
+        tGain.connect(this.ctx.destination);
+        thud.start(now);
+        thud.stop(now + 0.11);
+
+        const slice = this.ctx.createOscillator();
+        const sGain = this.ctx.createGain();
+        slice.type = 'sawtooth';
+        slice.frequency.setValueAtTime(1320, now);
+        slice.frequency.exponentialRampToValueAtTime(420, now + 0.07);
+        sGain.gain.setValueAtTime(0.11, now);
+        sGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        slice.connect(sGain);
+        sGain.connect(this.ctx.destination);
+        slice.start(now);
+        slice.stop(now + 0.09);
+    }
+
+    playCaught() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [493.88, 466.16, 415.30, 329.63];
+        notes.forEach((f, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(f, now + i * 0.11);
+            if (i === 3) {
+                osc.frequency.linearRampToValueAtTime(210, now + i * 0.11 + 0.35);
+            }
+            gain.gain.setValueAtTime(0.16, now + i * 0.11);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.11 + 0.36);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.11);
+            osc.stop(now + i * 0.11 + 0.38);
+        });
+    }
+
+    startMusic() {
+        this.stopMusic();
+        if (!this.musicOn || !this.ctx) return;
+
+        const stepMs = 102;
+        const melody = [
+            523.25, 659.25, 783.99, 659.25, 880.00, 783.99, 659.25, 587.33,
+            523.25, 659.25, 783.99, 880.00, 1046.50, 880.00, 783.99, 659.25
+        ];
+        const bass = [
+            130.81, 0, 196.00, 130.81, 174.61, 0, 196.00, 0,
+            146.83, 0, 196.00, 146.83, 196.00, 0, 220.00, 196.00
+        ];
+        const drumPattern = [1, 0, 2, 0, 1, 2, 1, 2, 1, 0, 2, 1, 1, 2, 1, 2];
+
+        this.step = 0;
+        this.grooveTimer = setInterval(() => {
+            if (!this.musicOn || !this.ctx || this.ctx.state !== 'running') return;
+            const now = this.ctx.currentTime;
+            const idx = this.step % 16;
+
+            const mFreq = melody[idx];
+            if (mFreq > 0) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(mFreq, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.095);
+            }
+
+            const bFreq = bass[idx];
+            if (bFreq > 0) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(bFreq, now);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.14);
+            }
+
+            const dHit = drumPattern[idx];
+            if (dHit > 0) {
+                const dOsc = this.ctx.createOscillator();
+                const dGain = this.ctx.createGain();
+                dOsc.type = dHit === 1 ? 'sine' : 'square';
+                dOsc.frequency.setValueAtTime(dHit === 1 ? 140 : 480, now);
+                dOsc.frequency.exponentialRampToValueAtTime(dHit === 1 ? 45 : 180, now + 0.055);
+                dGain.gain.setValueAtTime(dHit === 1 ? 0.13 : 0.03, now);
+                dGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                dOsc.connect(dGain);
+                dGain.connect(this.ctx.destination);
+                dOsc.start(now);
+                dOsc.stop(now + 0.065);
+            }
+
+            this.step++;
+        }, stepMs);
+    }
+
+    stopMusic() {
+        if (this.grooveTimer) {
+            clearInterval(this.grooveTimer);
+            this.grooveTimer = null;
+        }
+    }
+}
+
+const audio = new KenyanOhanglaAudio();
+
+// ==========================================
+// 3. CANVAS & PROPORTIONAL VIRTUAL STAGE
+// ==========================================
+const gameViewportContainer = document.getElementById('game-viewport-container');
+const gameShell = document.getElementById('game-shell');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const STATE = {
+    START: 'START',
+    READY: 'READY',
+    PLAYING: 'PLAYING',
+    PAUSED: 'PAUSED',
+    CAUGHT_ANIM: 'CAUGHT_ANIM',
+    GAMEOVER: 'GAMEOVER'
+};
+
+const REF_WIDTH = 820;
+const REF_HEIGHT = 640;
+
+let gameState = STATE.START;
+let width = REF_WIDTH;
+let height = REF_HEIGHT;
+let groundHeight = 82;
+let timeElapsed = 0;
+let gameOverTimeoutId = null;
+
+const GRAVITY = 1520;
+const FLAP_VELOCITY = -455;
+const MAX_FALL_SPEED = 640;
+
+const TOP_OBSTACLE_WIDTH = 74;
+const BOTTOM_OBSTACLE_SPECS = {
+    matatu:   { width: 154, height: 136 },
+    jiko:     { width: 78,  height: 72  },
+    crates:   { width: 76,  height: 96  },
+    building: { width: 140, height: 260 }
+};
+
+let score = 0;
+let distanceMeters = 0;
+let scrollSpeed = 290;
+let leadMargin = 0.62;
+let invulnTimer = 0;
+let shakeTimer = 0;
+let lastHitReason = 'general';
+let shackScrollX = 0;
+let butcherShoutTimer = 1.5;
+
+let caughtPhase = 'lunge';
+let caughtTimer = 0;
+let chopSoundTimer = 0;
+
+const bird = {
+    x: 0,
+    y: 0,
+    vy: 0,
+    radius: 19,
+    wingAngle: 0,
+    rotation: 0
+};
+
+const butcher = {
+    x: 0,
+    y: 0,
+    runCycle: 0,
+    cleaverAngle: 0,
+    lungeOffset: 0,
+    facingLeft: false
+};
+
+let obstacles = [];
+let collectibles = [];
+let particles = [];
+let popups = [];
+let clouds = [];
+let dustClouds = [];
+let spawnTimer = 0;
+
+const BUTCHER_SHOUTS = [
+    "🔪 SHIKA HUYO KUKU!",
+    "🔥 RUDI KINOTHIA'S!",
+    "🥩 LEO NI CHOMA!",
+    "🏃🏾‍♂️ SIMAMA HAPO!",
+    "⚡ RUDI KWENYE BANDA!"
+];
+const SLANG_GATE = ["Vuka!", "Haraka!", "Chop-Chop!", "Hehe! Koswa!", "Sawa Kiongozi!"];
+
+// ==========================================
+// 4. SCALE-TO-FIT VIEWPORT RESIZE ENGINE
+// ==========================================
+function resize() {
+    const containerW = window.innerWidth;
+    const containerH = window.innerHeight;
+
+    const scaleX = containerW / REF_WIDTH;
+    const scaleY = containerH / REF_HEIGHT;
+    const scale = Math.min(scaleX, scaleY);
+
+    gameShell.style.transform = `scale(${scale})`;
+
+    width = REF_WIDTH;
+    height = REF_HEIGHT;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.round(REF_WIDTH * dpr);
+    canvas.height = Math.round(REF_HEIGHT * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    groundHeight = 82;
+
+    if (gameState === STATE.START || gameState === STATE.READY) {
+        shackScrollX = 0;
+        bird.x = Math.max(245, width * 0.36);
+        bird.y = height - groundHeight - 62;
+        butcher.x = Math.max(135, width * 0.19);
+        butcher.y = height - groundHeight - 4;
+        butcher.facingLeft = false;
+    }
+
+    initClouds();
+}
+
+function initClouds() {
+    clouds = [];
+    for (let i = 0; i < 6; i++) {
+        clouds.push({
+            x: (i / 6) * width + Math.random() * 80,
+            y: 30 + Math.random() * (height * 0.24),
+            scale: 0.75 + Math.random() * 0.65,
+            speed: 24 + Math.random() * 18
+        });
+    }
+}
+
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 80));
+resize();
+
+// ==========================================
+// 5. MINIMAL PACK SHOP UI, ABOUT & REVIVE HELPERS
+// ==========================================
+function syncReviveDisplays() {
+    const hudRevEl = document.getElementById('hudReviveCount');
+    if (hudRevEl) hudRevEl.textContent = `${reviveCount}`;
+
+    const startRevEl = document.getElementById('startReviveBalance');
+    if (startRevEl) startRevEl.textContent = `${reviveCount}`;
+
+    const badgeEl = document.getElementById('reviveCountBadge');
+    if (badgeEl) badgeEl.textContent = `${reviveCount}`;
+}
+
+function saveReviveCount() {
+    localStorage.setItem(STORAGE_KEY_REVIVES, reviveCount.toString());
+    syncReviveDisplays();
+}
+
+function updateHomeStatsUI() {
+    const bestHudEl = document.getElementById('bestHudDisplay');
+    if (bestHudEl) {
+        bestHudEl.textContent = `${bestScore.toLocaleString()} PTS`;
+    }
+    const startHighScoreEl = document.getElementById('startHighScore');
+    if (startHighScoreEl) {
+        startHighScoreEl.textContent = `${bestScore.toLocaleString()} PTS`;
+    }
+    syncReviveDisplays();
+}
+
+function renderShopUI() {
+    const statusBadge = document.getElementById('packStatusBadge');
+    const buyBtn = document.getElementById('buySkillsPackBtn');
+    const unlockedBanner = document.getElementById('packUnlockedBanner');
+
+    if (isSkillsPackOwned) {
+        statusBadge.textContent = 'ACTIVE ✅';
+        statusBadge.className = 'text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-400 text-emerald-300 uppercase';
+        buyBtn.classList.add('hidden');
+        unlockedBanner.classList.remove('hidden');
+    } else {
+        statusBadge.textContent = 'LOCKED';
+        statusBadge.className = 'text-[10px] sm:text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 border border-white/20 text-gray-300 uppercase';
+        buyBtn.classList.remove('hidden');
+        unlockedBanner.classList.add('hidden');
+    }
+}
+
+function showShopToast(msg, isSuccess = false) {
+    const existing = document.getElementById('shopToast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'shopToast';
+    toast.className = `fixed top-6 left-1/2 -translate-x-1/2 z-50 ${isSuccess ? 'bg-emerald-600 border-white' : 'bg-red-600 border-yellow-300'} border-2 text-white text-xs font-bold px-4 py-2 rounded-full shadow-2xl`;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2400);
+}
+
+document.getElementById('openAboutBtn').addEventListener('click', () => {
+    document.getElementById('aboutModal').classList.remove('hidden');
+});
+
+document.getElementById('closeAboutBtn').addEventListener('click', () => {
+    document.getElementById('aboutModal').classList.add('hidden');
+});
+
+document.getElementById('closeAboutBottomBtn').addEventListener('click', () => {
+    document.getElementById('aboutModal').classList.add('hidden');
+});
+
+document.getElementById('openShopBtn').addEventListener('click', () => {
+    renderShopUI();
+    document.getElementById('shopModal').classList.remove('hidden');
+});
+
+document.getElementById('closeShopBtn').addEventListener('click', () => {
+    document.getElementById('shopModal').classList.add('hidden');
+});
+
+document.getElementById('buySkillsPackBtn').addEventListener('click', () => {
+    openMpesaModal('skills_pack');
+});
+
+// ==========================================
+// 6. DIFFERENTIAL AUTO-ACTIVATE SKILL GAUGES
+// ==========================================
+function buildSkillHudIcons() {
+    const bar = document.getElementById('skillHudBar');
+    bar.innerHTML = '';
+
+    const orderedIds = ['shield', 'magnet', 'turbo'].filter(id => equippedSkills.includes(id));
+
+    orderedIds.forEach((skillId) => {
+        const skill = SKILLS_CATALOG.find(s => s.id === skillId);
+        if (!skill) return;
+
+        const badge = document.createElement('div');
+        badge.id = `skillBtn_${skill.id}`;
+        badge.className = 'pointer-events-none relative w-11 h-11 sm:w-16 sm:h-16 rounded-2xl bg-slate-950/85 border-2 border-slate-500/90 overflow-hidden flex flex-col items-center justify-center shadow-xl transition-transform';
+        badge.setAttribute('aria-label', `${skill.name} auto-skill gauge`);
+
+        badge.innerHTML = `
+            <div id="skillFill_${skill.id}" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t ${skill.bgGradient} opacity-85 transition-all duration-150" style="height: 0%;"></div>
+            <span class="absolute top-0.5 right-1 text-[7px] sm:text-[8px] font-bold bg-black/75 text-cyan-300 px-1 rounded border border-white/15 z-10 uppercase">AUTO</span>
+            <span class="relative z-10 text-base sm:text-2xl drop-shadow mt-1">${skill.icon}</span>
+            <span id="skillPct_${skill.id}" class="relative z-10 text-[8px] sm:text-[10px] font-bold text-white drop-shadow leading-none mt-0.5">0%</span>
+        `;
+
+        bar.appendChild(badge);
+    });
+}
+
+function chargeAllEquippedSkills(baseAmount) {
+    equippedSkills.forEach(skillId => {
+        if (activeSkillTimers[skillId] <= 0 && skillCharge[skillId] < 100) {
+            const mult = SKILL_CHARGE_MULTIPLIERS[skillId] || 1.0;
+            const gained = baseAmount * mult;
+            skillCharge[skillId] = Math.min(100, skillCharge[skillId] + gained);
+            if (skillCharge[skillId] >= 100) {
+                triggerEquippedSkill(skillId);
+            }
+        }
+    });
+    updateSkillHudIcons();
+}
+
+function triggerEquippedSkill(skillId) {
+    if (gameState !== STATE.PLAYING) return;
+    if (!equippedSkills.includes(skillId)) return;
+    if (skillCharge[skillId] < 100) return;
+
+    const skill = SKILLS_CATALOG.find(s => s.id === skillId);
+    if (!skill) return;
+
+    skillCharge[skillId] = 0;
+    activeSkillTimers[skillId] = skill.duration;
+
+    audio.playSkillActivate();
+    shakeTimer = 0.16;
+
+    if (skillId === 'shield') {
+        spawnFeathers(bird.x, bird.y, '#38bdf8', 22);
+        addPopup("🛡️ SHIELD AUTO-ACTIVE!", bird.x, bird.y - 34, "#38bdf8");
+    } else if (skillId === 'magnet') {
+        spawnFeathers(bird.x, bird.y, '#c084fc', 22);
+        addPopup("🧲 MAGNET AUTO-ACTIVE!", bird.x, bird.y - 34, "#e879f9");
+    } else if (skillId === 'turbo') {
+        leadMargin = Math.min(1.0, leadMargin + 0.25);
+        spawnFeathers(bird.x - 12, bird.y, '#facc15', 22);
+        addPopup("⚡ BOOST AUTO-DASH!", bird.x, bird.y - 34, "#facc15");
+    }
+
+    updateSkillHudIcons();
+}
+
+function updateSkillHudIcons() {
+    equippedSkills.forEach(skillId => {
+        const btn = document.getElementById(`skillBtn_${skillId}`);
+        const fillEl = document.getElementById(`skillFill_${skillId}`);
+        const pctEl = document.getElementById(`skillPct_${skillId}`);
+        const skill = SKILLS_CATALOG.find(s => s.id === skillId);
+        if (!btn || !fillEl || !pctEl || !skill) return;
+
+        const activeTime = activeSkillTimers[skillId];
+        const charge = Math.floor(skillCharge[skillId]);
+
+        if (activeTime > 0) {
+            const pctRemain = Math.max(0, Math.min(100, (activeTime / skill.duration) * 100));
+            fillEl.style.height = `${pctRemain}%`;
+            pctEl.textContent = `${activeTime.toFixed(1)}s`;
+            pctEl.className = 'relative z-10 text-[8px] sm:text-[10px] font-bold text-cyan-200 drop-shadow leading-none mt-0.5';
+            btn.classList.add('skill-active');
+        } else {
+            fillEl.style.height = `${charge}%`;
+            pctEl.textContent = `${charge}%`;
+            pctEl.className = 'relative z-10 text-[8px] sm:text-[10px] font-bold text-white drop-shadow leading-none mt-0.5';
+            btn.classList.remove('skill-active');
+        }
+    });
+}
+
+// ==========================================
+// 7. REVIVE & UNIFIED LIPA NA M-PESA FLOW
+// ==========================================
+function executeRevive() {
+    if (reviveCount <= 0) {
+        openMpesaModal('revives');
+        return;
+    }
+
+    reviveCount -= 1;
+    saveReviveCount();
+
+    if (gameOverTimeoutId) {
+        clearTimeout(gameOverTimeoutId);
+        gameOverTimeoutId = null;
+    }
+
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('mpesaModal').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('skillHudBar').classList.remove('hidden');
+
+    const playableH = height - groundHeight;
+    bird.x = Math.max(245, width * 0.44);
+    bird.y = Math.max(90, playableH * 0.42);
+    bird.vy = FLAP_VELOCITY * 0.65;
+    bird.rotation = -0.25;
+    bird.wingAngle = -1.0;
+
+    leadMargin = 0.65;
+    invulnTimer = 2.5;
+    butcher.facingLeft = false;
+    butcher.lungeOffset = 0;
+    butcher.x = Math.max(70, bird.x - (56 + leadMargin * (width * 0.31)));
+
+    obstacles = obstacles.filter(obs => (obs.x > bird.x + 210) || (obs.x + obs.width < bird.x - 160));
+    spawnTimer = Math.max(spawnTimer, 1.35);
+
+    audio.init();
+    audio.playReviveChime();
+    audio.startMusic();
+
+    spawnFeathers(bird.x, bird.y, '#c084fc', 22);
+    spawnFeathers(bird.x, bird.y, '#facc15', 14);
+    addPopup("★ KUKU REVIVED! 2.5s SHIELD!", bird.x, bird.y - 34, "#c084fc");
+
+    gameState = STATE.PLAYING;
+    updateHUD();
+}
+
+function openMpesaModal(mode = 'revives') {
+    currentMpesaMode = mode;
+
+    const itemLabel = document.getElementById('mpesaItemLabel');
+    const itemTitle = document.getElementById('mpesaItemTitle');
+    const priceTag = document.getElementById('mpesaPriceTag');
+    const sendBtn = document.getElementById('sendStkBtn');
+
+    if (mode === 'skills_pack') {
+        itemLabel.textContent = 'Kuku Power Bundle';
+        itemTitle.innerHTML = '<span>🛡️🧲⚡ ALL SKILLS PACK</span>';
+        priceTag.textContent = '30 KSH';
+        sendBtn.textContent = '📲 SEND STK PUSH (30 KSH)';
+    } else {
+        itemLabel.textContent = 'Kuku Second Chance Pack';
+        itemTitle.innerHTML = `${PURPLE_STAR_SVG_SM}<span>5 REVIVES</span>`;
+        priceTag.textContent = '10 KSH';
+        sendBtn.textContent = '📲 SEND STK PUSH (10 KSH)';
+    }
+
+    document.getElementById('mpesaErrorMsg').classList.add('hidden');
+    document.getElementById('mpesaFormStep').classList.remove('hidden');
+    document.getElementById('mpesaStatusStep').classList.add('hidden');
+    document.getElementById('mpesaSpinner').classList.remove('hidden');
+    document.getElementById('mpesaSuccessIcon').classList.add('hidden');
+    document.getElementById('mpesaSuccessActionBtn').classList.add('hidden');
+    document.getElementById('mpesaModal').classList.remove('hidden');
+}
+
+function closeMpesaModal() {
+    document.getElementById('mpesaModal').classList.add('hidden');
+}
+
+function processMpesaStkPush() {
+    const rawPhone = document.getElementById('mpesaPhoneInput').value.replace(/\s+/g, '');
+    const kenyaPhoneRegex = /^(?:254|\+254|0)?(7\d{8}|1\d{8})$/;
+    const errorEl = document.getElementById('mpesaErrorMsg');
+
+    if (!kenyaPhoneRegex.test(rawPhone)) {
+        errorEl.classList.remove('hidden');
+        return;
+    }
+    errorEl.classList.add('hidden');
+
+    audio.init();
+    audio.playPeck(80);
+
+    const amountText = currentMpesaMode === 'skills_pack' ? 'KSH 30.00' : 'KSH 10.00';
+
+    document.getElementById('mpesaFormStep').classList.add('hidden');
+    document.getElementById('mpesaStatusStep').classList.remove('hidden');
+    document.getElementById('mpesaSpinner').classList.remove('hidden');
+    document.getElementById('mpesaSuccessIcon').classList.add('hidden');
+    document.getElementById('mpesaSuccessActionBtn').classList.add('hidden');
+    document.getElementById('mpesaStatusTitle').textContent = "📲 M-Pesa STK Push Sent!";
+    document.getElementById('mpesaStatusTitle').className = "text-sm sm:text-base font-bold text-yellow-300";
+    document.getElementById('mpesaStatusDesc').textContent = `Prompt sent to ${rawPhone}. Enter M-Pesa PIN for ${amountText}...`;
+
+    setTimeout(() => {
+        audio.playReviveChime();
+
+        document.getElementById('mpesaSpinner').classList.add('hidden');
+        document.getElementById('mpesaSuccessIcon').classList.remove('hidden');
+
+        const actionBtn = document.getElementById('mpesaSuccessActionBtn');
+
+        if (currentMpesaMode === 'skills_pack') {
+            isSkillsPackOwned = true;
+            unlockedSkills = ['shield', 'magnet', 'turbo'];
+            equippedSkills = ['shield', 'magnet', 'turbo'];
+            localStorage.setItem(STORAGE_KEY_PACK_OWNED, 'true');
+
+            buildSkillHudIcons();
+            renderShopUI();
+
+            document.getElementById('mpesaStatusTitle').textContent = "All Skills Pack Unlocked! ✅";
+            document.getElementById('mpesaStatusTitle').className = "text-base sm:text-lg font-extrabold text-emerald-300";
+            document.getElementById('mpesaStatusDesc').textContent = "M-Pesa receipt RKT30PACK confirmed for 30 KSH. Shield, Magnet & Boost are now active!";
+            actionBtn.innerHTML = "<span>DONE ✅</span>";
+            actionBtn.classList.remove('hidden');
+            showShopToast("✅ All Skills Pack Unlocked via M-Pesa!", true);
+        } else {
+            reviveCount += 5;
+            saveReviveCount();
+
+            document.getElementById('mpesaStatusTitle').textContent = "Confirmed! +5 Revives Added!";
+            document.getElementById('mpesaStatusTitle').className = "text-base sm:text-lg font-extrabold text-emerald-300";
+            document.getElementById('mpesaStatusDesc').innerHTML = `M-Pesa receipt RKT9X2KUKU confirmed for 10 KSH. New Balance: <span class="text-purple-300 font-bold">★ ${reviveCount} Revives</span>.`;
+            actionBtn.innerHTML = `${PURPLE_STAR_SVG_SM}<span>USE 1 REVIVE &amp; CONTINUE RUN!</span>`;
+            actionBtn.classList.remove('hidden');
+            showShopToast("✅ +5 Revives Credited via M-Pesa!", true);
+        }
+    }, 1700);
+}
+
+document.getElementById('reviveBtn').addEventListener('click', executeRevive);
+document.getElementById('openMpesaModalBtn').addEventListener('click', () => openMpesaModal('revives'));
+document.getElementById('closeMpesaBtn').addEventListener('click', closeMpesaModal);
+document.getElementById('sendStkBtn').addEventListener('click', processMpesaStkPush);
+document.getElementById('mpesaSuccessActionBtn').addEventListener('click', () => {
+    if (currentMpesaMode === 'skills_pack') {
+        closeMpesaModal();
+    } else {
+        executeRevive();
+    }
+});
+
+// ==========================================
+// 8. MOBILE-FIRST TOUCH, POINTER & PAUSE CONTROLS
+// ==========================================
+function handlePrimaryAction(e) {
+    if (e && e.target && e.target.closest('button, input')) return;
+
+    if (gameState === STATE.READY) {
+        launchEscapeRun();
+    } else if (gameState === STATE.PLAYING) {
+        bird.vy = FLAP_VELOCITY;
+        bird.wingAngle = -1.05;
+        audio.playFlap();
+        spawnFeathers(bird.x - 10, bird.y + 4, '#facc15', 3);
+    }
+}
+
+window.addEventListener('keydown', (e) => {
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+        if (e.code === 'Enter') {
+            e.preventDefault();
+            processMpesaStkPush();
+        }
+        return;
+    }
+
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+        e.preventDefault();
+        if (gameState === STATE.READY || gameState === STATE.PLAYING) {
+            handlePrimaryAction();
+        } else if (gameState === STATE.START || gameState === STATE.GAMEOVER) {
+            prepareEscapeStage();
+        }
+    } else if (e.code === 'KeyP' || e.code === 'Escape') {
+        if (gameState === STATE.PLAYING) {
+            pauseGame();
+        } else if (gameState === STATE.PAUSED) {
+            resumeGame();
+        }
+    }
+});
+
+let lastTouchActionTime = 0;
+
+function triggerViewportTap(e) {
+    if (e && e.target && e.target.closest('button, input')) return;
+    if (gameState !== STATE.READY && gameState !== STATE.PLAYING) return;
+
+    if (e && e.cancelable) {
+        e.preventDefault();
+    }
+
+    const now = performance.now();
+    if (now - lastTouchActionTime < 65) return;
+    lastTouchActionTime = now;
+
+    handlePrimaryAction(e);
+}
+
+document.body.addEventListener('touchstart', triggerViewportTap, { passive: false });
+document.body.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') return;
+    triggerViewportTap(e);
+});
+
+document.getElementById('startBtn').addEventListener('click', prepareEscapeStage);
+document.getElementById('restartBtn').addEventListener('click', prepareEscapeStage);
+
+document.getElementById('gameOverHomeBtn').addEventListener('click', () => {
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('skillHudBar').classList.add('hidden');
+    gameState = STATE.START;
+    updateHomeStatsUI();
+    document.getElementById('startScreen').classList.remove('hidden');
+});
+
+document.getElementById('pauseBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (gameState === STATE.PLAYING) pauseGame();
+    else if (gameState === STATE.PAUSED) resumeGame();
+});
+
+document.getElementById('resumeBtn').addEventListener('click', resumeGame);
+document.getElementById('quitToMenuBtn').addEventListener('click', () => {
+    document.getElementById('pauseModal').classList.add('hidden');
+    document.getElementById('skillHudBar').classList.add('hidden');
+    gameState = STATE.START;
+    document.getElementById('hud').classList.add('hidden');
+    updateHomeStatsUI();
+    document.getElementById('startScreen').classList.remove('hidden');
+    audio.stopMusic();
+});
+
+function pauseGame() {
+    if (gameState !== STATE.PLAYING) return;
+    gameState = STATE.PAUSED;
+    audio.stopMusic();
+    document.getElementById('pauseModal').classList.remove('hidden');
+    document.getElementById('pauseBtn').textContent = '▶️ RESUME';
+}
+
+function resumeGame() {
+    if (gameState !== STATE.PAUSED) return;
+    gameState = STATE.PLAYING;
+    audio.startMusic();
+    document.getElementById('pauseModal').classList.add('hidden');
+    document.getElementById('pauseBtn').textContent = '⏸️ PAUSE';
+}
+
+document.getElementById('muteBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    audio.init();
+    audio.musicOn = !audio.musicOn;
+    const btn = document.getElementById('muteBtn');
+    if (audio.musicOn) {
+        btn.textContent = '🔊 ON';
+        if (gameState === STATE.PLAYING) audio.startMusic();
+    } else {
+        btn.textContent = '🔇 OFF';
+        audio.stopMusic();
+    }
+});
+
+updateHomeStatsUI();
+
+// ==========================================
+// 9. GAMEFLOW & SPAWNING
+// ==========================================
+function prepareEscapeStage() {
+    audio.init();
+    if (gameOverTimeoutId) {
+        clearTimeout(gameOverTimeoutId);
+        gameOverTimeoutId = null;
+    }
+
+    score = 0;
+    distanceMeters = 0;
+    scrollSpeed = 290;
+    leadMargin = 0.62;
+    invulnTimer = 0;
+    shakeTimer = 0;
+    shackScrollX = 0;
+    butcherShoutTimer = 1.4;
+    lastHitReason = 'general';
+    caughtPhase = 'lunge';
+    caughtTimer = 0;
+    chopSoundTimer = 0;
+
+    skillCharge = { shield: 0, magnet: 0, turbo: 0 };
+    activeSkillTimers = { shield: 0, magnet: 0, turbo: 0 };
+    buildSkillHudIcons();
+    updateSkillHudIcons();
+
+    bird.x = Math.max(245, width * 0.36);
+    bird.y = height - groundHeight - 62;
+    bird.vy = 0;
+    bird.rotation = -0.15;
+
+    butcher.x = Math.max(135, width * 0.19);
+    butcher.y = height - groundHeight - 4;
+    butcher.lungeOffset = 0;
+    butcher.facingLeft = false;
+
+    obstacles = [];
+    collectibles = [];
+    particles = [];
+    popups = [];
+    dustClouds = [];
+    spawnTimer = 1.5;
+
+    gameState = STATE.READY;
+
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.add('hidden');
+    document.getElementById('pauseModal').classList.add('hidden');
+    document.getElementById('mpesaModal').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('skillHudBar').classList.remove('hidden');
+    document.getElementById('readyPrompt').classList.remove('hidden');
+
+    syncReviveDisplays();
+    updateHUD();
+}
+
+function launchEscapeRun() {
+    audio.init();
+    audio.startMusic();
+    audio.playFlap();
+
+    bird.vy = FLAP_VELOCITY;
+    bird.wingAngle = -1.05;
+    bird.rotation = -0.35;
+
+    spawnFeathers(bird.x - 18, bird.y, '#ffffff', 16);
+    spawnFeathers(bird.x - 18, bird.y, '#facc15', 12);
+    addPopup("🔪 SHIKA HUYO KUKU!", butcher.x + 20, butcher.y - 88, "#f87171");
+
+    document.getElementById('readyPrompt').classList.add('hidden');
+    gameState = STATE.PLAYING;
+}
+
+function addPopup(text, x, y, color = '#4ade80') {
+    popups.push({ text, x, y, color, life: 1.05 });
+}
+
+function spawnFeathers(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 55 + Math.random() * 175;
+        particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 30,
+            size: 3 + Math.random() * 4.5,
+            color,
+            rot: Math.random() * Math.PI,
+            life: 0.45 + Math.random() * 0.3
+        });
+    }
+}
+
+function handleObstacleCollision(reason, isDirectHeadOn = false) {
+    if (invulnTimer > 0) return;
+
+    if (activeSkillTimers.shield > 0 || activeSkillTimers.turbo > 0) {
+        invulnTimer = 0.45;
+        shakeTimer = 0.15;
+        audio.playPeck(160);
+        spawnFeathers(bird.x + 12, bird.y, '#38bdf8', 14);
+        addPopup("🛡️ SKILL SMASH! +30 PTS", bird.x, bird.y - 26, "#38bdf8");
+        score += 30;
+        return;
+    }
+
+    lastHitReason = isDirectHeadOn ? 'direct' : reason;
+
+    if (isDirectHeadOn) {
+        leadMargin = 0;
+        shakeTimer = 0.45;
+        audio.playStumble();
+        spawnFeathers(bird.x, bird.y, '#ef4444', 24);
+        triggerCaught();
+        return;
+    }
+
+    invulnTimer = 1.05;
+    bird.vy = FLAP_VELOCITY * 0.72;
+    leadMargin -= 0.38;
+    butcher.lungeOffset = 28;
+    shakeTimer = 0.32;
+    audio.playStumble();
+    spawnFeathers(bird.x, bird.y, '#ffffff', 16);
+    spawnFeathers(bird.x, bird.y, '#ef4444', 10);
+
+    if (leadMargin <= 0.04) {
+        leadMargin = 0;
+        triggerCaught();
+    } else {
+        addPopup("⚠️ UMEKWAA! BUTCHER KARIBU!", bird.x, bird.y - 28, "#f87171");
+    }
+}
+
+function triggerCaught() {
+    gameState = STATE.CAUGHT_ANIM;
+    caughtPhase = 'lunge';
+    caughtTimer = 0;
+    chopSoundTimer = 0.12;
+    butcher.facingLeft = false;
+
+    audio.stopMusic();
+    audio.playCaught();
+    shakeTimer = 0.5;
+
+    const finalPoints = Math.floor(score);
+    if (finalPoints > bestScore) {
+        bestScore = finalPoints;
+        localStorage.setItem(STORAGE_KEY_SCORE, bestScore.toString());
+    }
+
+    document.getElementById('finalScoreDisplay').textContent = `${finalPoints.toLocaleString()} PTS`;
+    document.getElementById('finalDistDisplay').textContent = `${Math.floor(distanceMeters)} m`;
+    document.getElementById('finalBestDisplay').textContent = `${bestScore.toLocaleString()} PTS`;
+    updateHomeStatsUI();
+
+    gameOverTimeoutId = setTimeout(() => {
+        gameState = STATE.GAMEOVER;
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('skillHudBar').classList.add('hidden');
+        syncReviveDisplays();
+        document.getElementById('gameOverScreen').classList.remove('hidden');
+    }, 2150);
+}
+
+function spawnPair() {
+    const playableHeight = height - groundHeight;
+    const difficultyFactor = Math.min(1, score / 800);
+
+    const isBuilding = Math.random() < 0.25;
+
+    let topType = 'hooks';
+    let bottomType = 'matatu';
+    let bottomWidth = 154;
+    let bottomHeight = 136;
+    let baseGapTop = 60;
+    let gapBottom = playableHeight;
+
+    if (isBuilding) {
+        bottomType = 'building';
+        bottomWidth = BOTTOM_OBSTACLE_SPECS.building.width;
+        bottomHeight = BOTTOM_OBSTACLE_SPECS.building.height;
+        gapBottom = playableHeight - bottomHeight;
+        baseGapTop = gapBottom - 60;
+    } else {
+        const maxGap = 155;
+        const minGap = 132;
+        const gapHeight = maxGap - (maxGap - minGap) * difficultyFactor;
+
+        const topTypes = ['hooks', 'kplc'];
+        topType = topTypes[Math.floor(Math.random() * topTypes.length)];
+        const bottomTypes = ['matatu', 'jiko', 'crates'];
+        bottomType = bottomTypes[Math.floor(Math.random() * bottomTypes.length)];
+
+        const spec = BOTTOM_OBSTACLE_SPECS[bottomType];
+        bottomWidth = spec.width;
+        bottomHeight = spec.height;
+        gapBottom = playableHeight - bottomHeight;
+        baseGapTop = Math.max(30, gapBottom - gapHeight - 20);
+    }
+
+    const spawnX = width + 110;
+    const isMoving = !isBuilding && (score >= 80 || (score >= 30 && Math.random() < 0.35));
+    const maxSafeSway = Math.max(10, Math.min(28, (gapBottom - 130) - baseGapTop));
+    const swayAmp = isMoving ? Math.min(maxSafeSway, 14 + difficultyFactor * 12) : 0;
+    const swaySpeed = isMoving ? (2.3 + difficultyFactor * 1.4) : 0;
+
+    obstacles.push({
+        x: spawnX,
+        width: bottomWidth,
+        topWidth: TOP_OBSTACLE_WIDTH,
+        bottomHeight,
+        baseGapTop,
+        gapTop: baseGapTop,
+        gapHeight: isBuilding ? 999 : gapBottom - baseGapTop,
+        gapBottom,
+        topType,
+        bottomType,
+        isBuilding,
+        isMoving,
+        swayAmp,
+        swaySpeed,
+        swayPhase: Math.random() * Math.PI * 2,
+        passed: false
+    });
+
+    const needsBoost = leadMargin < 0.52 || Math.random() < 0.34;
+    let feedType = 'maize';
+    if (needsBoost) {
+        feedType = Math.random() < 0.52 ? 'water' : 'insect';
+    } else {
+        feedType = Math.random() < 0.72 ? 'maize' : 'insect';
+    }
+
+    const gapCenter = isBuilding ? baseGapTop - 50 : baseGapTop + (gapBottom - baseGapTop) / 2;
+
+    collectibles.push({
+        x: spawnX + bottomWidth * 0.5 + 125,
+        y: Math.max(45, Math.min(playableHeight - 48, gapCenter + (Math.random() - 0.5) * 38)),
+        type: feedType,
+        radius: 17,
+        bobPhase: Math.random() * Math.PI * 2
+    });
+}
+
+// ==========================================
+// 10. SIMULATION UPDATE
+// ==========================================
+function update(dt) {
+    if (gameState === STATE.PAUSED) return;
+
+    timeElapsed += dt;
+
+    clouds.forEach(c => {
+        c.x -= c.speed * dt;
+        if (c.x < -110) c.x = width + 110;
+    });
+
+    if (shakeTimer > 0) shakeTimer = Math.max(0, shakeTimer - dt);
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 180 * dt;
+        p.rot += 6 * dt;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    for (let i = dustClouds.length - 1; i >= 0; i--) {
+        const d = dustClouds[i];
+        d.x += d.vx * dt;
+        d.y += d.vy * dt;
+        d.size += 12 * dt;
+        d.life -= dt;
+        if (d.life <= 0) dustClouds.splice(i, 1);
+    }
+
+    for (let i = popups.length - 1; i >= 0; i--) {
+        const pop = popups[i];
+        pop.y -= 52 * dt;
+        pop.life -= dt;
+        if (pop.life <= 0) popups.splice(i, 1);
+    }
+
+    if (gameState === STATE.CAUGHT_ANIM) {
+        caughtTimer += dt;
+
+        if (caughtPhase === 'lunge') {
+            butcher.facingLeft = false;
+            butcher.x += (bird.x - 16 - butcher.x) * Math.min(1, dt * 14);
+            butcher.runCycle += dt * 22;
+            butcher.cleaverAngle = Math.sin(timeElapsed * 32) * 0.9;
+            bird.y += (butcher.y - 38 - bird.y) * Math.min(1, dt * 12);
+
+            if (caughtTimer >= 0.36) {
+                caughtPhase = 'march_back';
+                butcher.facingLeft = true;
+                addPopup("🔪 CHOP! CHOP! RUDI KINOTHIA'S!", butcher.x, butcher.y - 95, "#ef4444");
+            }
+        } else {
+            butcher.facingLeft = true;
+            butcher.x -= 165 * dt;
+            butcher.y = height - groundHeight - 4;
+            butcher.runCycle += dt * 18;
+
+            const chopWave = Math.sin(timeElapsed * 36);
+            butcher.cleaverAngle = -0.35 + chopWave * 1.15;
+
+            bird.x = butcher.x - 24;
+            bird.y = butcher.y - 38 + Math.abs(Math.sin(butcher.runCycle)) * 4;
+            bird.rotation = 0.55 + Math.sin(timeElapsed * 28) * 0.25;
+            bird.wingAngle = Math.sin(timeElapsed * 34) * 0.95;
+
+            chopSoundTimer -= dt;
+            if (chopSoundTimer <= 0) {
+                chopSoundTimer = 0.24;
+                audio.playChopHit();
+                shakeTimer = 0.08;
+                spawnFeathers(bird.x, bird.y - 6, Math.random() < 0.5 ? '#ffffff' : '#facc15', 7);
+                spawnFeathers(bird.x, bird.y - 4, '#ef4444', 4);
+                addPopup("🔪 CHOP!", bird.x - 10, bird.y - 30, "#f87171");
+            }
+        }
+        return;
+    }
+
+    if (gameState === STATE.START || gameState === STATE.READY) {
+        shackScrollX = 0;
+        bird.x = Math.max(245, width * 0.36);
+        bird.y = height - groundHeight - 62 + Math.sin(timeElapsed * 6) * 5;
+        bird.wingAngle = Math.sin(timeElapsed * 14) * 0.5;
+        butcher.x = Math.max(135, width * 0.19);
+        butcher.y = height - groundHeight - 4;
+        butcher.facingLeft = false;
+        butcher.runCycle += dt * 10;
+        butcher.cleaverAngle = Math.sin(timeElapsed * 9) * 0.45;
+        return;
+    }
+
+    if (gameState !== STATE.PLAYING) return;
+
+    if (shackScrollX < width + 360) {
+        shackScrollX += scrollSpeed * dt;
+    }
+
+    Object.keys(activeSkillTimers).forEach(k => {
+        if (activeSkillTimers[k] > 0) {
+            activeSkillTimers[k] = Math.max(0, activeSkillTimers[k] - dt);
+        }
+    });
+
+    const targetBaseSpeed = Math.min(455, 290 + score * 0.24);
+    const turboMult = activeSkillTimers.turbo > 0 ? 1.42 : 1.0;
+    scrollSpeed = targetBaseSpeed * turboMult;
+
+    distanceMeters += (scrollSpeed * dt) * 0.1;
+
+    if (invulnTimer > 0) invulnTimer = Math.max(0, invulnTimer - dt);
+
+    if (activeSkillTimers.shield > 0 && Math.random() < 0.65) {
+        spawnFeathers(bird.x - 14, bird.y, '#38bdf8', 2);
+    }
+    if (activeSkillTimers.turbo > 0 && Math.random() < 0.8) {
+        spawnFeathers(bird.x - 18, bird.y, '#facc15', 2);
+    }
+    if (activeSkillTimers.magnet > 0 && Math.random() < 0.55) {
+        spawnFeathers(bird.x, bird.y, '#c084fc', 1);
+    }
+
+    leadMargin = Math.max(0.06, leadMargin - dt * 0.014);
+
+    butcherShoutTimer -= dt;
+    if (butcherShoutTimer <= 0) {
+        butcherShoutTimer = 3.6 + Math.random() * 2.2;
+        const shout = BUTCHER_SHOUTS[Math.floor(Math.random() * BUTCHER_SHOUTS.length)];
+        addPopup(shout, butcher.x + 25, butcher.y - 92, "#fca5a5");
+    }
+
+    bird.vy = Math.min(MAX_FALL_SPEED, bird.vy + GRAVITY * dt);
+    bird.y += bird.vy * dt;
+    bird.wingAngle += (0.25 - bird.wingAngle) * Math.min(1, dt * 13);
+    bird.rotation = Math.max(-0.48, Math.min(0.72, bird.vy / 580));
+
+    if (bird.y < bird.radius + 12) {
+        bird.y = bird.radius + 12;
+        bird.vy = 90;
+    }
+
+    const floorY = height - groundHeight - bird.radius;
+    if (bird.y >= floorY) {
+        bird.y = floorY - 5;
+        bird.vy = FLAP_VELOCITY * 0.85;
+        handleObstacleCollision('ground', false);
+        if (gameState !== STATE.PLAYING) return;
+    }
+
+    const minBirdX = width * 0.30;
+    const maxBirdX = width * 0.52;
+    const targetBirdX = minBirdX + (maxBirdX - minBirdX) * leadMargin;
+    bird.x += (targetBirdX - bird.x) * Math.min(1, dt * 6);
+
+    butcher.facingLeft = false;
+    butcher.lungeOffset += (0 - butcher.lungeOffset) * Math.min(1, dt * 5);
+    const maxGapPx = width * 0.31;
+    const targetButcherX = bird.x - (56 + leadMargin * maxGapPx) + butcher.lungeOffset;
+    butcher.x += (targetButcherX - butcher.x) * Math.min(1, dt * 8);
+    butcher.y = height - groundHeight - 4;
+    butcher.runCycle += (scrollSpeed * dt) * 0.085;
+    butcher.cleaverAngle = Math.sin(timeElapsed * 15) * 0.55;
+
+    if (Math.random() < 0.45) {
+        dustClouds.push({
+            x: butcher.x - 12,
+            y: height - groundHeight - 4 - Math.random() * 8,
+            vx: -scrollSpeed * 0.45 - Math.random() * 40,
+            vy: -15 - Math.random() * 25,
+            size: 5 + Math.random() * 7,
+            life: 0.45
+        });
+    }
+
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) {
+        spawnPair();
+        spawnTimer = Math.max(1.6, 2.1 - (scrollSpeed - 290) / 360);
+    }
+
+    const hitR = bird.radius * 0.82;
+    const playableH = height - groundHeight;
+
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        obs.x -= scrollSpeed * dt;
+
+        obs.gapBottom = playableH - obs.bottomHeight;
+
+        if (obs.isMoving) {
+            const rawTop = obs.baseGapTop + Math.sin(timeElapsed * obs.swaySpeed + obs.swayPhase) * obs.swayAmp;
+            const minAllowedGap = 132;
+            const maxAllowedGap = 155;
+            const clampMinTop = Math.max(30, obs.gapBottom - maxAllowedGap);
+            const clampMaxTop = Math.max(clampMinTop, obs.gapBottom - minAllowedGap);
+            obs.gapTop = Math.max(clampMinTop, Math.min(clampMaxTop, rawTop));
+        } else {
+            obs.gapTop = obs.baseGapTop;
+        }
+        obs.gapHeight = obs.gapBottom - obs.gapTop;
+
+        if (!obs.passed && obs.x + obs.width < bird.x) {
+            obs.passed = true;
+            leadMargin = Math.min(0.92, leadMargin + 0.05);
+            const slang = SLANG_GATE[Math.floor(Math.random() * SLANG_GATE.length)];
+            audio.playPeck(0);
+            score += 25;
+            chargeAllEquippedSkills(12);
+            addPopup(`${slang} +25 PTS`, bird.x, bird.y - 26, '#4ade80');
+            spawnFeathers(bird.x, bird.y, '#4ade80', 7);
+        }
+
+        let hitTop = false;
+        let hitBottom = false;
+        let frontEdgeX = obs.x;
+
+        if (!obs.isBuilding) {
+            const topLeft = obs.x + (obs.width - obs.topWidth) / 2;
+            const topRight = topLeft + obs.topWidth;
+            const withinTopX = (bird.x + hitR > topLeft + 4) && (bird.x - hitR < topRight - 4);
+            hitTop = withinTopX && (bird.y - hitR < obs.gapTop);
+            if (hitTop) frontEdgeX = topLeft;
+        }
+
+        const withinBottomX = (bird.x + hitR > obs.x + 4) && (bird.x - hitR < obs.x + obs.width - 4);
+        hitBottom = withinBottomX && (bird.y + hitR > obs.gapBottom);
+
+        if (hitTop || hitBottom) {
+            const penDepth = hitTop
+                ? (obs.gapTop - (bird.y - hitR))
+                : ((bird.y + hitR) - obs.gapBottom);
+            const isFrontImpact = (bird.x < frontEdgeX + 14) && (penDepth > 13);
+            const reason = obs.isBuilding ? 'building' : (hitTop ? (obs.topType === 'kplc' ? 'kplc' : 'hooks') : 'general');
+            handleObstacleCollision(reason, isFrontImpact);
+            if (gameState !== STATE.PLAYING) return;
+        }
+
+        if (obs.x + obs.width < -140) {
+            obstacles.splice(i, 1);
+        }
+    }
+
+    for (let i = collectibles.length - 1; i >= 0; i--) {
+        const col = collectibles[i];
+        col.x -= scrollSpeed * dt;
+
+        if (activeSkillTimers.magnet > 0) {
+            const dx = bird.x - col.x;
+            const dy = bird.y - col.y;
+            const d = Math.hypot(dx, dy);
+            if (d < 290 && d > 1) {
+                col.x += (dx / d) * 440 * dt;
+                col.y += (dy / d) * 440 * dt;
+            }
+        }
+
+        const bobY = col.y + Math.sin(timeElapsed * 6 + col.bobPhase) * 6;
+        const dist = Math.hypot(bird.x - col.x, bird.y - bobY);
+
+        if (dist < bird.radius + col.radius + 6) {
+            if (col.type === 'maize') {
+                leadMargin = Math.min(0.96, leadMargin + 0.08);
+                score += 30;
+                audio.playPeck(120);
+                chargeAllEquippedSkills(24);
+                addPopup("🌽 MAHINDI! +30 PTS", col.x, bobY, "#facc15");
+                spawnFeathers(col.x, bobY, '#facc15', 10);
+            } else if (col.type === 'water') {
+                leadMargin = Math.min(1.0, leadMargin + 0.14);
+                score += 45;
+                audio.playPeck(160);
+                chargeAllEquippedSkills(34);
+                addPopup("💧 MAJI FRESH! +45 PTS", col.x, bobY, "#38bdf8");
+                spawnFeathers(col.x, bobY, '#38bdf8', 14);
+            } else {
+                leadMargin = Math.min(1.0, leadMargin + 0.18);
+                score += 60;
+                audio.playPeck(200);
+                chargeAllEquippedSkills(44);
+                addPopup("🦗 DUDU CRUNCH! +60 PTS", col.x, bobY, "#a3e635");
+                spawnFeathers(col.x, bobY, '#a3e635', 16);
+            }
+            collectibles.splice(i, 1);
+            continue;
+        }
+
+        if (col.x < -50) {
+            collectibles.splice(i, 1);
+        }
+    }
+
+    updateHUD();
+    updateSkillHudIcons();
+}
+
+function updateHUD() {
+    document.getElementById('scoreDisplay').textContent = `${Math.floor(score).toLocaleString()} PTS`;
+
+    const activeBadge = document.getElementById('activeSkillBadge');
+    const activeIcon = document.getElementById('activeSkillIcon');
+    const activeText = document.getElementById('activeSkillText');
+
+    if (activeSkillTimers.shield > 0) {
+        activeBadge.classList.remove('hidden');
+        activeIcon.textContent = '🛡️';
+        activeText.textContent = `SHIELD (${activeSkillTimers.shield.toFixed(1)}s)`;
+    } else if (activeSkillTimers.magnet > 0) {
+        activeBadge.classList.remove('hidden');
+        activeIcon.textContent = '🧲';
+        activeText.textContent = `MAGNET (${activeSkillTimers.magnet.toFixed(1)}s)`;
+    } else if (activeSkillTimers.turbo > 0) {
+        activeBadge.classList.remove('hidden');
+        activeIcon.textContent = '⚡';
+        activeText.textContent = `BOOST (${activeSkillTimers.turbo.toFixed(1)}s)`;
+    } else {
+        activeBadge.classList.add('hidden');
+    }
+
+    const pct = Math.max(4, Math.min(100, Math.round(leadMargin * 100)));
+    const metersGap = Math.max(1, Math.round(leadMargin * 18));
+    const fill = document.getElementById('chaseBarFill');
+    const statusTxt = document.getElementById('chaseStatusText');
+    fill.style.width = `${pct}%`;
+
+    if (leadMargin < 0.34) {
+        statusTxt.textContent = `⚠️ HATARI! (${metersGap}m)`;
+        statusTxt.className = "text-red-400 animate-pulse";
+    } else if (leadMargin < 0.62) {
+        statusTxt.textContent = `CHUNGA! (${metersGap}m)`;
+        statusTxt.className = "text-yellow-300";
+    } else {
+        statusTxt.textContent = `GAP: ${metersGap}m`;
+        statusTxt.className = "text-green-400";
+    }
+}
+
+// ==========================================
+// 11. RENDERING
+// ==========================================
+function draw() {
+    ctx.save();
+
+    if (shakeTimer > 0) {
+        ctx.translate((Math.random() - 0.5) * 11, (Math.random() - 0.5) * 11);
+    }
+
+    drawKenyanSkyline();
+
+    if (shackScrollX < width + 360) {
+        drawKinothiasButcheryShack();
+    }
+
+    obstacles.forEach(drawObstacle);
+    collectibles.forEach(drawCollectible);
+    drawMurramRoad();
+    drawButcherChaser();
+    drawKukuHero();
+    drawEffects();
+
+    ctx.restore();
+}
+
+function drawKenyanSkyline() {
+    const skyH = height - groundHeight;
+    const grad = ctx.createLinearGradient(0, 0, 0, skyH);
+    grad.addColorStop(0, '#1e1b4b');
+    grad.addColorStop(0.42, '#9d174d');
+    grad.addColorStop(0.8, '#ea580c');
+    grad.addColorStop(1, '#fde047');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, skyH);
+
+    const sunX = width * 0.78;
+    const sunY = skyH * 0.52;
+    ctx.fillStyle = 'rgba(254, 240, 138, 0.3)';
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, 62, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fef9c3';
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, 36, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    clouds.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 18 * c.scale, 0, Math.PI * 2);
+        ctx.arc(c.x + 18 * c.scale, c.y - 5 * c.scale, 22 * c.scale, 0, Math.PI * 2);
+        ctx.arc(c.x + 36 * c.scale, c.y, 16 * c.scale, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    ctx.fillStyle = '#4c1d95';
+    ctx.beginPath();
+    ctx.moveTo(0, skyH);
+    ctx.quadraticCurveTo(width * 0.22, skyH - 68, width * 0.44, skyH - 32);
+    ctx.quadraticCurveTo(width * 0.68, skyH - 74, width, skyH - 24);
+    ctx.lineTo(width, skyH);
+    ctx.fill();
+
+    ctx.fillStyle = '#1e1b4b';
+    const kiccX = width * 0.56;
+    ctx.fillRect(kiccX, skyH - 118, 30, 118);
+    ctx.fillRect(kiccX - 6, skyH - 125, 42, 7);
+    ctx.fillRect(kiccX + 14, skyH - 140, 2, 16);
+    ctx.beginPath();
+    ctx.arc(kiccX + 42, skyH, 20, Math.PI, 0);
+    ctx.fill();
+
+    ctx.fillRect(width * 0.72, skyH - 96, 28, 96);
+    ctx.fillRect(width * 0.84, skyH - 68, 36, 68);
+}
+
+function drawKinothiasButcheryShack() {
+    const baseY = height - groundHeight;
+    const sx = Math.max(12, width * 0.03) - shackScrollX;
+
+    ctx.save();
+    ctx.translate(sx, baseY);
+
+    ctx.fillStyle = '#78350f';
+    ctx.strokeStyle = '#451a03';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(0, -172, 215, 172, [6, 6, 0, 0]);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#991b1b';
+    ctx.beginPath();
+    ctx.moveTo(-14, -172);
+    ctx.lineTo(232, -172);
+    ctx.lineTo(216, -192);
+    ctx.lineTo(-4, -192);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(10, -162, 195, 28);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(10, -162, 195, 28);
+    ctx.fillStyle = '#991b1b';
+    ctx.font = 'bold 13.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText("KINOTHIA'S BUTCHERY", 107.5, -143);
+
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(20, -128, 175, 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.fillText('FRESH KUKU HAPA • CHOMA ZONE', 107.5, -115);
+
+    ctx.fillStyle = '#1f2937';
+    ctx.fillRect(132, -92, 70, 90);
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(132, -92, 70, 90);
+
+    for (let bx = 144; bx <= 188; bx += 14) {
+        ctx.beginPath();
+        ctx.moveTo(bx, -92);
+        ctx.lineTo(bx, -2);
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.moveTo(202, -92);
+    ctx.lineTo(232, -100);
+    ctx.lineTo(232, -10);
+    ctx.lineTo(202, -2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function drawMurramRoad() {
+    const y0 = height - groundHeight;
+
+    ctx.fillStyle = '#9a3412';
+    ctx.fillRect(0, y0, width, groundHeight);
+
+    ctx.fillStyle = '#c2410c';
+    ctx.fillRect(0, y0, width, 10);
+
+    const scrollOffset = (distanceMeters * 28) % 55;
+    ctx.fillStyle = '#15803d';
+    for (let gx = -scrollOffset; gx < width; gx += 55) {
+        ctx.beginPath();
+        ctx.moveTo(gx, y0 + 2);
+        ctx.lineTo(gx + 5, y0 - 6);
+        ctx.lineTo(gx + 10, y0 + 2);
+        ctx.fill();
+    }
+
+    ctx.fillStyle = '#7c2d12';
+    for (let px = -scrollOffset; px < width; px += 55) {
+        ctx.beginPath();
+        ctx.arc(px + 22, y0 + 26, 3.5, 0, Math.PI * 2);
+        ctx.arc(px + 42, y0 + 44, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    dustClouds.forEach(d => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, d.life * 1.4);
+        ctx.fillStyle = '#fdba74';
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+}
+
+function drawObstacle(obs) {
+    const playableH = height - groundHeight;
+    const cx = obs.x + obs.width / 2;
+
+    if (obs.isBuilding) {
+        const bx = obs.x;
+        const by = obs.gapBottom;
+        const bw = obs.width;
+        const bh = obs.bottomHeight;
+
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        ctx.fillStyle = '#38bdf8';
+        for (let wy = by + 16; wy < playableH - 20; wy += 32) {
+            for (let wx = bx + 16; wx < bx + bw - 20; wx += 32) {
+                ctx.fillRect(wx, wy, 16, 20);
+            }
+        }
+
+        ctx.fillStyle = '#facc15';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🏢 NAIROBI TOWER', cx, by + 26);
+        return;
+    }
+
+    const topW = obs.topWidth;
+    const topLeft = obs.x + (obs.width - topW) / 2;
+    const topAnchorY = -160;
+
+    if (obs.topType === 'hooks') {
+        const beamBottom = Math.max(topAnchorY + 20, obs.gapTop - 34);
+        ctx.fillStyle = '#7f1d1d';
+        ctx.fillRect(topLeft + 8, topAnchorY, topW - 16, beamBottom - topAnchorY);
+
+        ctx.fillStyle = '#991b1b';
+        ctx.fillRect(topLeft + 18, topAnchorY, 6, beamBottom - topAnchorY);
+        ctx.fillRect(topLeft + topW - 24, topAnchorY, 6, beamBottom - topAnchorY);
+
+        ctx.fillStyle = '#451a03';
+        ctx.fillRect(topLeft, obs.gapTop - 38, topW, 12);
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(topLeft, obs.gapTop - 38, topW, 12);
+
+        [-16, 16].forEach(hx => {
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(cx + hx, obs.gapTop - 26);
+            ctx.lineTo(cx + hx, obs.gapTop - 10);
+            ctx.arc(cx + hx - 4, obs.gapTop - 10, 5, 0, Math.PI * 1.25);
+            ctx.stroke();
+        });
+    } else {
+        const poleBottom = obs.gapTop - 10;
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(cx - 9, topAnchorY, 18, poleBottom - topAnchorY);
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(cx - 9, topAnchorY, 18, poleBottom - topAnchorY);
+
+        for (let armY = obs.gapTop - 98; armY > 10; armY -= 72) {
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(topLeft + 8, armY, topW - 16, 6);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(topLeft + 14, armY - 5, 6, 5);
+            ctx.fillRect(topLeft + topW - 20, armY - 5, 6, 5);
+        }
+
+        ctx.fillStyle = '#475569';
+        ctx.beginPath();
+        ctx.roundRect(topLeft + 12, obs.gapTop - 54, topW - 24, 32, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.roundRect(topLeft + 10, obs.gapTop - 22, topW - 20, 22, 4);
+        ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚡ KPLC', cx, obs.gapTop - 7);
+    }
+
+    const botH = playableH - obs.gapBottom;
+    if (botH > 0) {
+        if (obs.bottomType === 'jiko') {
+            drawChomaCookerAndTallerChef(obs, cx, playableH, botH);
+        } else if (obs.bottomType === 'matatu') {
+            drawNganyaMatatu(obs, cx, playableH, botH);
+        } else {
+            drawChickenCrates(obs, cx, playableH, botH);
+        }
+    }
+}
+
+function drawChomaCookerAndTallerChef(obs, cx, playableH, botH) {
+    const cookerX = obs.x + 2;
+    const cookerW = obs.width - 4;
+    const cookerTopY = obs.gapBottom + 6;
+
+    const chefX = obs.x + obs.width + 18;
+    const chefBaseY = playableH;
+    const fanWave = Math.sin(timeElapsed * 11 + obs.x) * 0.42;
+
+    ctx.save();
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(chefX - 5, chefBaseY - 26);
+    ctx.lineTo(chefX - 6, chefBaseY);
+    ctx.moveTo(chefX + 5, chefBaseY - 26);
+    ctx.lineTo(chefX + 6, chefBaseY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#0d9488';
+    ctx.beginPath();
+    ctx.roundRect(chefX - 12, chefBaseY - 56, 24, 34, 5);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(chefX - 9, chefBaseY - 50, 18, 28);
+
+    ctx.fillStyle = '#5c2d16';
+    ctx.beginPath();
+    ctx.arc(chefX, chefBaseY - 64, 9.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(chefX - 10, chefBaseY - 80, 20, 11, 4);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(chefX - 7, chefBaseY - 46);
+    ctx.rotate(-0.28 + fanWave);
+    ctx.strokeStyle = '#5c2d16';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-21, -9);
+    ctx.stroke();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(-21, -9);
+    ctx.lineTo(-34, -13);
+    ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+
+    ctx.fillStyle = '#334155';
+    ctx.beginPath();
+    ctx.roundRect(cookerX, cookerTopY, cookerW, Math.max(12, playableH - cookerTopY), [6, 6, 0, 0]);
+    ctx.fill();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(cookerX - 2, cookerTopY - 3, cookerW + 4, 9);
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(cookerX + 6, cookerTopY - 1, cookerW - 12, 3.5);
+
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.ellipse(cx - 4, cookerTopY - 7, 13, 6.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#78350f';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.strokeStyle = '#fef3c7';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx + 7, cookerTopY - 9);
+    ctx.lineTo(cx + 15, cookerTopY - 13);
+    ctx.stroke();
+
+    const smokeY = cookerTopY - 15 - ((timeElapsed * 28 + obs.x) % 24);
+    ctx.fillStyle = 'rgba(226, 232, 240, 0.38)';
+    ctx.beginPath();
+    ctx.arc(cx - 6, smokeY, 8, 0, Math.PI * 2);
+    ctx.arc(cx + 8, smokeY - 6, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔥 COOKER', cx, cookerTopY + 24);
+}
+
+function drawNganyaMatatu(obs, cx, playableH, botH) {
+    const x = obs.x;
+    const y = obs.gapBottom;
+    const w = obs.width;
+    const wheelR = 14;
+    const bodyBottom = playableH - wheelR * 0.65;
+
+    const grad = ctx.createLinearGradient(x, y, x + w, bodyBottom);
+    grad.addColorStop(0, '#facc15');
+    grad.addColorStop(0.45, '#dc2626');
+    grad.addColorStop(1, '#581c87');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(x + 22, y);
+    ctx.lineTo(x + w - 8, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + 10);
+    ctx.lineTo(x + w, bodyBottom - 4);
+    ctx.quadraticCurveTo(x + w, bodyBottom, x + w - 6, bodyBottom);
+    ctx.lineTo(x + 6, bodyBottom);
+    ctx.quadraticCurveTo(x, bodyBottom, x, bodyBottom - 8);
+    ctx.lineTo(x, y + 36);
+    ctx.quadraticCurveTo(x + 4, y + 12, x + 22, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(x + 28, y - 5, w - 42, 5);
+    ctx.fillStyle = '#22d3ee';
+    ctx.fillRect(x + 24, y + 5, w - 32, 3.5);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.moveTo(x + 22, y + 8);
+    ctx.lineTo(x + 42, y + 8);
+    ctx.lineTo(x + 42, y + 38);
+    ctx.lineTo(x + 6, y + 38);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    const winStartX = x + 48;
+    const winW = (w - 58) / 3 - 4;
+    for (let wi = 0; wi < 3; wi++) {
+        const wx = winStartX + wi * (winW + 5);
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.roundRect(wx, y + 11, winW, 27, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x + 12, y + 44, w - 20, 19);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(x + 12, y + 44, w - 20, 19);
+
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NGANYA MATATU', cx + 4, y + 57);
+
+    ctx.fillStyle = '#16a34a';
+    ctx.fillRect(x + 10, y + 68, w - 18, 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + 10, y + 73, w - 18, 2.5);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(x + 10, y + 75.5, w - 18, 5);
+
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(x - 2, bodyBottom - 16, 16, 14);
+    ctx.fillStyle = '#fef08a';
+    ctx.beginPath();
+    ctx.arc(x + 3, bodyBottom - 11, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    const wheelPositions = [x + 32, x + w - 34];
+    const spinAngle = distanceMeters * 0.45;
+    wheelPositions.forEach(wx => {
+        const wy = playableH - wheelR + 1;
+        ctx.fillStyle = '#090d16';
+        ctx.beginPath();
+        ctx.arc(wx, wy, wheelR + 3, Math.PI, 0);
+        ctx.fill();
+
+        ctx.fillStyle = '#111827';
+        ctx.beginPath();
+        ctx.arc(wx, wy, wheelR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.arc(wx, wy, wheelR * 0.48, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(wx + Math.cos(spinAngle) * 5, wy + Math.sin(spinAngle) * 5);
+        ctx.lineTo(wx - Math.cos(spinAngle) * 5, wy - Math.sin(spinAngle) * 5);
+        ctx.stroke();
+    });
+}
+
+function drawChickenCrates(obs, cx, playableH, botH) {
+    const x = obs.x + 2;
+    const w = obs.width - 4;
+    const crateCount = 3;
+    const singleH = botH / crateCount;
+
+    for (let i = 0; i < crateCount; i++) {
+        const cy = obs.gapBottom + i * singleH;
+        ctx.fillStyle = i % 2 === 0 ? '#b45309' : '#92400e';
+        ctx.beginPath();
+        ctx.roundRect(x, cy + 1, w, singleH - 2, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        ctx.fillStyle = '#451a03';
+        ctx.fillRect(x + 8, cy + 6, w - 16, 4);
+        ctx.fillRect(x + 8, cy + singleH - 10, w - 16, 4);
+    }
+
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('KUKU CRATES', cx, obs.gapBottom + botH * 0.5 + 3);
+}
+
+function drawCollectible(col) {
+    ctx.save();
+    const bobY = col.y + Math.sin(timeElapsed * 6 + col.bobPhase) * 6;
+    ctx.translate(col.x, bobY);
+
+    if (col.type === 'maize') {
+        ctx.shadowColor = '#facc15';
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.3)';
+        ctx.beginPath();
+        ctx.arc(0, 0, col.radius + 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.font = '25px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🌽', 0, 0);
+    } else if (col.type === 'water') {
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.34)';
+        ctx.beginPath();
+        ctx.arc(0, 0, col.radius + 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.font = '25px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('💧', 0, 0);
+    } else {
+        ctx.shadowColor = '#a3e635';
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = 'rgba(163, 230, 53, 0.34)';
+        ctx.beginPath();
+        ctx.arc(0, 0, col.radius + 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.font = '25px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🦗', 0, 0);
+    }
+
+    ctx.restore();
+}
+
+function drawButcherChaser() {
+    ctx.save();
+    const bob = Math.abs(Math.sin(butcher.runCycle)) * 6;
+    ctx.translate(butcher.x, butcher.y - bob);
+
+    if (butcher.facingLeft) {
+        ctx.scale(-1, 1);
+    }
+
+    const legSwing = Math.sin(butcher.runCycle) * 14;
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(-4, -24);
+    ctx.lineTo(-4 - legSwing, -8);
+    ctx.stroke();
+    ctx.fillStyle = '#090d16';
+    ctx.beginPath();
+    ctx.roundRect(-9 - legSwing, -10, 14, 12, 3);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(4, -24);
+    ctx.lineTo(4 + legSwing, -8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.roundRect(-1 + legSwing, -10, 14, 12, 3);
+    ctx.fill();
+
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath();
+    ctx.roundRect(-14, -56, 28, 34, 6);
+    ctx.fill();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.roundRect(-12, -54, 24, 38, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(-3, -38, 4.5, 0, Math.PI * 2);
+    ctx.arc(5, -28, 3.5, 0, Math.PI * 2);
+    ctx.arc(-5, -24, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#5c2d16';
+    ctx.beginPath();
+    ctx.arc(2, -66, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(6, -68, 2.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(7, -68, 1.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.ellipse(7, -61, 3.5, 2.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(-9, -82, 22, 10, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(-10, -48);
+    if (butcher.facingLeft) {
+        ctx.strokeStyle = '#5c2d16';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(12, 2);
+        ctx.lineTo(24, 10);
+        ctx.stroke();
+    } else {
+        ctx.rotate(-0.4 + Math.cos(butcher.runCycle) * 0.35);
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(-10, -10, 10, 0, Math.PI * 1.7);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(10, -48);
+    ctx.rotate(butcher.cleaverAngle);
+
+    ctx.strokeStyle = '#5c2d16';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(16, -12);
+    ctx.stroke();
+
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(14, -15, 9, 5);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(23, -17);
+    ctx.lineTo(44, -21);
+    ctx.lineTo(42, -7);
+    ctx.lineTo(23, -10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+    ctx.restore();
+}
+
+function drawKukuHero() {
+    ctx.save();
+    ctx.translate(bird.x, bird.y);
+
+    if (invulnTimer > 0 && Math.floor(invulnTimer * 18) % 2 === 0) {
+        ctx.globalAlpha = 0.5;
+    }
+
+    if (activeSkillTimers.shield > 0 || invulnTimer > 1.1) {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+        ctx.beginPath();
+        ctx.arc(0, 0, bird.radius + 12 + Math.sin(timeElapsed * 16) * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    }
+    if (activeSkillTimers.turbo > 0) {
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.34)';
+        ctx.beginPath();
+        ctx.arc(-6, 0, bird.radius + 11, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    if (activeSkillTimers.magnet > 0) {
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(0, 0, bird.radius + 18 + Math.sin(timeElapsed * 12) * 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    ctx.rotate(bird.rotation);
+
+    const wave = Math.sin(timeElapsed * 20) * 5;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(-30, 1 + wave * 0.3, 18, 3);
+    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(-32, 4 + wave * 0.5, 20, 3);
+    ctx.fillStyle = '#16a34a';
+    ctx.fillRect(-30, 7 + wave * 0.7, 18, 3);
+
+    ctx.fillStyle = '#d97706';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, bird.radius + 2, bird.radius - 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath();
+    ctx.ellipse(5, 3, bird.radius * 0.65, bird.radius * 0.55, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(-4, -bird.radius, 6, 0, Math.PI * 2);
+    ctx.arc(3, -bird.radius - 1, 6.5, 0, Math.PI * 2);
+    ctx.arc(9, -bird.radius + 2, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(12, 9, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(9, -5, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(11, -5, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.moveTo(bird.radius - 1, -4);
+    ctx.lineTo(bird.radius + 13, -1);
+    ctx.lineTo(bird.radius - 1, 2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(bird.radius - 1, 2);
+    ctx.lineTo(bird.radius + 10, 6);
+    ctx.lineTo(bird.radius - 1, 7);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(-3, 2);
+    ctx.rotate(bird.wingAngle);
+
+    ctx.shadowColor = '#f59e0b';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#92400e';
+    ctx.beginPath();
+    ctx.ellipse(-4, 4, 13, 7.5, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.restore();
+    ctx.restore();
+}
+
+function drawEffects() {
+    particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size * 1.4, p.size * 0.65, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    popups.forEach(pop => {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, pop.life * 1.4);
+        ctx.font = 'bold 17px Fredoka, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.strokeText(pop.text, pop.x, pop.y);
+        ctx.fillStyle = pop.color;
+        ctx.fillText(pop.text, pop.x, pop.y);
+        ctx.restore();
+    });
+}
+
+// ==========================================
+// 12. MAIN ANIMATION LOOP
+// ==========================================
+let lastTime = 0;
+
+function loop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
+    lastTime = timestamp;
+
+    update(dt);
+    draw();
+
+    requestAnimationFrame(loop);
+}
+
+window.onload = function () {
+    resize();
+    syncReviveDisplays();
+    renderShopUI();
+    requestAnimationFrame(loop);
+};
+</script>
+</body>
+</html>
